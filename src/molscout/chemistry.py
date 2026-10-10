@@ -19,8 +19,20 @@ class MoleculeProperties:
     tpsa: float
     rotatable_bonds: int
 
+    @property
+    def rule_of_five_violations(self) -> int:
+        """Count simple Lipinski threshold violations (a heuristic, not a score)."""
+        return sum(
+            (
+                self.molecular_weight > 500,
+                self.clogp > 5,
+                self.h_bond_donors > 5,
+                self.h_bond_acceptors > 10,
+            )
+        )
+
     def to_dict(self) -> dict[str, str | float | int]:
-        return asdict(self)
+        return {**asdict(self), "rule_of_five_violations": self.rule_of_five_violations}
 
 
 def parse_smiles(smiles: str) -> Chem.Mol:

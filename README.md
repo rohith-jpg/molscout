@@ -6,7 +6,9 @@ MolScout is a portfolio project, not a clinical or drug-safety decision system. 
 
 ## Project status
 
-This repository starts with the chemistry utilities, TDC benchmark configuration, Morgan/XGBoost baseline, MCP tool-server entry point, and unit tests. Chemprop, MoLFormer/PEFT, conformal calibration, retrieval, agent orchestration, web UI, and deployment are planned milestones; no model results are claimed yet.
+Implemented now: RDKit validation and descriptors, Morgan fingerprints, a TDC/XGBoost baseline runner, a stdio MCP server, batch CLI analysis, evidence-linked claims, an offline five-compound similarity demo, and a small FastAPI browser UI. The batch rank is a transparent Lipinski-threshold heuristic; it is not an ADMET model or a drug-candidate score. The local similarity catalog is only for demonstrating the tool contract; it is not ChEMBL and is not a comprehensive approved-drug index.
+
+Not implemented yet: trained ADMET predictors, Chemprop, MoLFormer fine-tuning, conformal prediction, atom attribution, a LangGraph/LLM planner, PubChem integration, and a web UI. No model performance, GPU-memory, latency, or cost numbers are claimed.
 
 ## Initial scope
 
@@ -49,8 +51,8 @@ flowchart LR
 ## Repository layout
 
 ```text
-src/molscout/       Chemistry, benchmark, baseline, and MCP server code
-tests/              Unit tests
+src/molscout/       Chemistry, analysis, similarity, benchmark, CLI, API, and MCP server code
+tests/              Unit tests for the implemented components
 outputs/            Local training outputs; do not commit large model files
 ```
 
@@ -72,6 +74,27 @@ Validate a molecule and inspect calculated properties:
 ```bash
 molscout validate 'CCO'
 ```
+
+Analyze a batch, rank valid entries by the number of rule-of-five threshold
+violations, and inspect the result IDs cited by each claim:
+
+```bash
+molscout analyze 'CCO' 'CC(=O)O' 'not-a-smiles'
+```
+
+The nearest-neighbor result uses a bundled, five-molecule demo catalog so the
+command works offline. It reports Morgan radius 2 / 2048-bit Tanimoto similarity
+and explicitly identifies this catalog as incomplete.
+
+Run the local browser demo and JSON API:
+
+```bash
+python -m pip install -e '.[api]'
+uvicorn molscout.api:app --reload
+```
+
+Open `http://127.0.0.1:8000`. The `/api/analyze` endpoint returns the same
+evidence-linked report as the CLI, and `/docs` exposes the generated API schema.
 
 Train/evaluate Morgan + XGBoost on the TDC tasks (downloads benchmark data on first use):
 
@@ -106,4 +129,10 @@ python -m molscout.mcp_server
 
 ## Technologies
 
-Python, RDKit, PyTDC, XGBoost, Chemprop, Hugging Face Transformers/PEFT, MAPIE, MCP, LangGraph, FastAPI, Docker, GitHub Actions, and LangSmith. Stretch integrations are clearly identified in the code and README until implemented.
+**Used in the current implementation:** Python, RDKit, NumPy, scikit-learn,
+XGBoost, Typer, FastAPI (API extra), PyTDC (benchmark extra), pytest (tests),
+and MCP (agent extra).
+
+**Planned:** Chemprop, Hugging Face Transformers/PEFT, MAPIE, LangGraph,
+FastAPI, Docker, GitHub Actions, and LangSmith. They are listed as roadmap items,
+not as completed integrations.

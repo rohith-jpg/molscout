@@ -35,18 +35,23 @@ def _features_and_labels(frame: Any) -> tuple[np.ndarray, np.ndarray]:
     smiles_col, target_col = _columns(frame)
     smiles = frame[smiles_col].astype(str).tolist()
     y = frame[target_col].to_numpy(dtype=float)
-    valid_rows: list[int] = []
-    valid_smiles: list[str] = []
+    canonical_smiles: list[str] = []
     from rdkit import Chem
 
     for index, smi in enumerate(smiles):
         mol = Chem.MolFromSmiles(smi)
-        if mol is not None and np.isfinite(y[index]):
-            valid_rows.append(index)
-            valid_smiles.append(Chem.MolToSmiles(mol))
-    if not valid_rows:
-        raise ValueError("No valid molecule/label rows were found")
-    return fingerprint_matrix(valid_smiles), y[valid_rows]
+        if mol is None:
+            raise ValueError(
+                f"Invalid SMILES at row {index}; refusing to silently drop benchmark examples"
+            )
+        if not np.isfinite(y[index]):
+            raise ValueError(
+                f"Missing/non-finite label at row {index}; refusing to silently drop benchmark examples"
+            )
+        canonical_smiles.append(Chem.MolToSmiles(mol))
+    if not canonical_smiles:
+        raise ValueError("No molecule/label rows were found")
+    return fingerprint_matrix(canonical_smiles), y
 
 
 def _make_model(kind: str, seed: int):
@@ -76,8 +81,32 @@ def _make_model(kind: str, seed: int):
     )
 
 
+def _aggregate_metrics(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Summarize independent runs without hiding the per-seed measurements."""
+    aggregate: list[dict[str, Any]] = []
+    for task_name, task in TASKS.items():
+        task_rows = [row for row in rows if row["dataset"] == task_name]
+        values = np.asarray([row["value"] for row in task_rows], dtype=float)
+        if not len(values):
+            continue
+        aggregate.append(
+            {
+                "dataset": task_name,
+                "metric": task["metric"],
+                "mean": float(np.mean(values)),
+                "std": float(np.std(values)),
+                "std_convention": "population standard deviation across supplied seeds",
+                "n_runs": int(len(values)),
+                "seeds": [int(row["seed"]) for row in task_rows],
+            }
+        )
+    return aggregate
+
+
 def run_baselines(output_dir: Path, seeds: list[int]) -> list[dict[str, Any]]:
     """Train on TDC train/validation splits and evaluate official test rows."""
+    if not seeds or any(seed < 0 for seed in seeds) or len(set(seeds)) != len(seeds):
+        raise ValueError("Provide one or more unique, non-negative random seeds")
     try:
         from tdc.benchmark_group import admet_group
     except ImportError as exc:
@@ -124,6 +153,8 @@ def run_baselines(output_dir: Path, seeds: list[int]) -> list[dict[str, Any]]:
                 json.dump(row, handle, indent=2)
     with (output_dir / "summary.json").open("w", encoding="utf-8") as handle:
         json.dump(rows, handle, indent=2)
+    with (output_dir / "aggregate.json").open("w", encoding="utf-8") as handle:
+        json.dump(_aggregate_metrics(rows), handle, indent=2)
     return rows
 
 

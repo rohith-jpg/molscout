@@ -2,7 +2,10 @@
 
 from __future__ import annotations
 
-from molscout.chemistry import compute_properties, validate_smiles
+from molscout.analysis import analyze_batch
+from molscout.chemistry import compute_properties as _compute_properties
+from molscout.chemistry import validate_smiles as _validate_smiles
+from molscout.similarity import similar_known_drugs as _similar_known_drugs
 
 try:
     from mcp.server.fastmcp import FastMCP
@@ -13,15 +16,27 @@ mcp = FastMCP("MolScout chemistry tools")
 
 
 @mcp.tool()
-def validate_smiles_tool(smiles: str) -> dict[str, str | bool]:
+def validate_smiles(smiles: str) -> dict[str, str | bool]:
     """Validate a SMILES string and return its canonical representation."""
-    return validate_smiles(smiles)
+    return _validate_smiles(smiles)
 
 
 @mcp.tool()
-def compute_properties_tool(smiles: str) -> dict[str, str | float | int]:
+def compute_properties(smiles: str) -> dict[str, str | float | int]:
     """Calculate reproducible 2D molecular descriptors with RDKit."""
-    return compute_properties(smiles).to_dict()
+    return _compute_properties(smiles).to_dict()
+
+
+@mcp.tool()
+def similar_known_drugs(smiles: str, limit: int = 3) -> dict[str, object]:
+    """Find structural neighbors in MolScout's small offline demo catalog."""
+    return _similar_known_drugs(smiles, limit=limit)
+
+
+@mcp.tool()
+def analyze_molecules(smiles_list: list[str]) -> dict[str, object]:
+    """Analyze a batch and return ranked, evidence-linked heuristic reports."""
+    return analyze_batch(smiles_list)
 
 
 if __name__ == "__main__":

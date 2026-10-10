@@ -15,6 +15,8 @@ def test_properties_have_expected_shape_and_types():
     assert result.molecular_weight > 0
     assert isinstance(result.h_bond_donors, int)
     assert isinstance(result.h_bond_acceptors, int)
+    assert result.rule_of_five_violations == 0
+    assert result.to_dict()["rule_of_five_violations"] == 0
 
 
 @pytest.mark.parametrize("smiles", ["", "not a molecule", "C1CC"])
