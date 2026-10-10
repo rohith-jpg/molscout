@@ -6,9 +6,9 @@ MolScout is a portfolio project, not a clinical or drug-safety decision system. 
 
 ## Project status
 
-Implemented now: RDKit validation and descriptors, Morgan fingerprints, a TDC/XGBoost baseline runner, a registry that loads saved endpoint models, a stdio MCP server, batch CLI analysis, evidence-linked claims, an offline five-compound similarity demo, and a small FastAPI browser UI. The batch rank is a transparent Lipinski-threshold heuristic; it is not an ADMET model or a drug-candidate score. The local similarity catalog is only for demonstrating the tool contract; it is not ChEMBL and is not a comprehensive approved-drug index.
+Implemented now: RDKit validation and descriptors, Morgan fingerprints, a TDC/XGBoost baseline runner, an explicit-split Chemprop ensemble training runner, a MAPIE split-conformal evaluation runner for AqSolDB, a registry that loads saved endpoint models, a stdio MCP server, batch CLI analysis, evidence-linked claims, an offline five-compound similarity demo, and a small FastAPI browser UI. The batch rank is a transparent Lipinski-threshold heuristic; it is not an ADMET model or a drug-candidate score. The local similarity catalog is only for demonstrating the tool contract; it is not ChEMBL and is not a comprehensive approved-drug index.
 
-Not implemented yet: trained ADMET predictor artifacts, Chemprop, MoLFormer fine-tuning, conformal prediction, atom attribution, a LangGraph/LLM planner, PubChem integration, and production deployment. The UI is local-only. No model performance, GPU-memory, latency, or cost numbers are claimed.
+Not implemented yet: trained ADMET predictor artifacts, Chemprop prediction export/metrics, MoLFormer fine-tuning, atom attribution, a LangGraph/LLM planner, PubChem integration, and production deployment. The Chemprop and conformal runners are code paths only; no models have been trained and no performance, GPU-memory, latency, or cost numbers are claimed. The UI is local-only.
 
 ## Initial scope
 
@@ -104,6 +104,34 @@ python -m molscout.benchmark --output-dir outputs/baseline --seeds 1 2 3 4 5
 
 This writes each model to `outputs/baseline/<endpoint>/seed-<n>/model.json`, per-seed metrics to `summary.json`, mean/population-standard-deviation summaries to `aggregate.json`, and seeds, package versions, split description, fingerprint settings, and model parameters to `run_manifest.json`. TDC recommends at least five independent runs for leaderboard-style reporting. Never tune on the held-out test set.
 
+Train Chemprop ensembles on the exact TDC train/validation/test CSV partitions
+(this downloads data and trains models; start with one endpoint before running
+all four):
+
+```bash
+python -m pip install -e '.[gnn,benchmark]'
+molscout-chemprop --tasks Solubility_AqSolDB --seeds 1 --ensemble-size 5
+```
+
+The runner writes the exact CSV splits, full CLI command, training log, and model
+checkpoints under `outputs/chemprop/`. It passes three explicit CSVs to
+Chemprop, so Chemprop does not create a second split. It currently records the
+training artifact but does not yet export Chemprop test metrics or predictions.
+
+Measure 90% split-conformal intervals for AqSolDB. The TDC training partition
+fits the XGBoost model, TDC validation partition calibrates intervals, and the
+fixed scaffold test set is used once for measurement:
+
+```bash
+python -m pip install -e '.[benchmark,uncertainty]'
+molscout-conformal --seeds 1 2 3 4 5
+```
+
+This writes per-molecule bounds and reports empirical test coverage, MAE, and
+mean interval width. Split conformal's coverage guarantee depends on
+exchangeability; scaffold-held-out evaluation can violate that assumption, so
+the measured test coverage is reported without promising nominal coverage.
+
 After training, predict one supported endpoint with the saved seed models:
 
 ```bash
@@ -121,7 +149,7 @@ python -m molscout.mcp_server
 ## Planned model and evaluation milestones
 
 1. Morgan fingerprints + XGBoost baseline across four tasks.
-2. Chemprop graph models; ensemble uncertainty first on AqSolDB.
+2. Chemprop graph ensembles on the same explicit TDC partitions; add prediction export and metric comparison.
 3. Frozen MoLFormer embeddings across tasks; time-boxed LoRA vs full fine-tuning on AqSolDB only.
 4. MAPIE 90% nominal regression intervals on AqSolDB, with empirical test coverage and interval width reported. Calibration uses training/validation data only. Coverage is not guaranteed for every chemical subgroup or under scaffold distribution shift.
 5. MCP tools and a LangGraph workflow that calls deterministic tools, records evidence, and abstains when model uncertainty or similarity is concerning.
@@ -141,6 +169,6 @@ python -m molscout.mcp_server
 XGBoost, Typer, FastAPI (API extra), PyTDC (benchmark extra), pytest (tests),
 and MCP (agent extra).
 
-**Planned:** Chemprop, Hugging Face Transformers/PEFT, MAPIE, LangGraph,
+**Implemented as optional runners, not yet trained:** Chemprop and MAPIE. **Planned:** Hugging Face Transformers/PEFT, LangGraph,
 FastAPI, Docker, GitHub Actions, and LangSmith. They are listed as roadmap items,
 not as completed integrations.
