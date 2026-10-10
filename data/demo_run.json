@@ -1,0 +1,315 @@
+{
+  "ranking_method": "Ascending count of Lipinski rule-of-five threshold violations; ties retain input order.",
+  "disclaimer": "Exploratory cheminformatics only. Rule-of-five counts and fingerprint similarity are heuristics; this report contains no trained ADMET prediction or experimental result.",
+  "molecules": [
+    {
+      "input_index": 0,
+      "input_smiles": "CCO",
+      "canonical_smiles": "CCO",
+      "valid": true,
+      "properties": {
+        "canonical_smiles": "CCO",
+        "molecular_weight": 46.069,
+        "clogp": -0.0014000000000000123,
+        "h_bond_donors": 1,
+        "h_bond_acceptors": 1,
+        "tpsa": 20.23,
+        "rotatable_bonds": 0,
+        "rule_of_five_violations": 0
+      },
+      "claims": [
+        {
+          "text": "The input canonicalizes to CCO.",
+          "evidence_ids": [
+            "m1-validation"
+          ]
+        },
+        {
+          "text": "The computed descriptors have 0 Lipinski rule-of-five threshold violation(s); this is a heuristic count.",
+          "evidence_ids": [
+            "m1-properties"
+          ]
+        },
+        {
+          "text": "The nearest entry in the small bundled demo reference set is aspirin (Tanimoto 0.111); similarity does not imply shared activity or safety.",
+          "evidence_ids": [
+            "m1-similarity"
+          ]
+        },
+        {
+          "text": "Ranked #1 using 0 rule-of-five threshold violation(s); ties keep input order.",
+          "evidence_ids": [
+            "m1-properties"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "m1-validation",
+          "tool": "validate_smiles",
+          "result": {
+            "valid": true,
+            "input_smiles": "CCO",
+            "canonical_smiles": "CCO"
+          }
+        },
+        {
+          "id": "m1-properties",
+          "tool": "compute_properties",
+          "result": {
+            "canonical_smiles": "CCO",
+            "molecular_weight": 46.069,
+            "clogp": -0.0014000000000000123,
+            "h_bond_donors": 1,
+            "h_bond_acceptors": 1,
+            "tpsa": 20.23,
+            "rotatable_bonds": 0,
+            "rule_of_five_violations": 0
+          }
+        },
+        {
+          "id": "m1-similarity",
+          "tool": "similar_known_drugs",
+          "result": {
+            "method": "Morgan radius 2, 2048 bits, Tanimoto similarity",
+            "catalog": "molscout_demo_reference_v1",
+            "catalog_size": 5,
+            "catalog_note": "Small offline teaching/demo set; not a comprehensive approved-drug index and not a source of efficacy or safety evidence.",
+            "matches": [
+              {
+                "name": "aspirin",
+                "smiles": "CC(=O)Oc1ccccc1C(=O)O",
+                "tanimoto": 0.1111111111111111
+              },
+              {
+                "name": "ibuprofen",
+                "smiles": "CC(C)Cc1ccc([C@@H](C)C(=O)O)cc1",
+                "tanimoto": 0.10714285714285714
+              },
+              {
+                "name": "metformin",
+                "smiles": "CN(C)C(=N)NC(=N)N",
+                "tanimoto": 0.09523809523809523
+              }
+            ]
+          }
+        }
+      ],
+      "rank": 1
+    },
+    {
+      "input_index": 1,
+      "input_smiles": "CC(=O)O",
+      "canonical_smiles": "CC(=O)O",
+      "valid": true,
+      "properties": {
+        "canonical_smiles": "CC(=O)O",
+        "molecular_weight": 60.05200000000001,
+        "clogp": 0.09089999999999993,
+        "h_bond_donors": 1,
+        "h_bond_acceptors": 1,
+        "tpsa": 37.3,
+        "rotatable_bonds": 0,
+        "rule_of_five_violations": 0
+      },
+      "claims": [
+        {
+          "text": "The input canonicalizes to CC(=O)O.",
+          "evidence_ids": [
+            "m2-validation"
+          ]
+        },
+        {
+          "text": "The computed descriptors have 0 Lipinski rule-of-five threshold violation(s); this is a heuristic count.",
+          "evidence_ids": [
+            "m2-properties"
+          ]
+        },
+        {
+          "text": "The nearest entry in the small bundled demo reference set is aspirin (Tanimoto 0.240); similarity does not imply shared activity or safety.",
+          "evidence_ids": [
+            "m2-similarity"
+          ]
+        },
+        {
+          "text": "Ranked #2 using 0 rule-of-five threshold violation(s); ties keep input order.",
+          "evidence_ids": [
+            "m2-properties"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "m2-validation",
+          "tool": "validate_smiles",
+          "result": {
+            "valid": true,
+            "input_smiles": "CC(=O)O",
+            "canonical_smiles": "CC(=O)O"
+          }
+        },
+        {
+          "id": "m2-properties",
+          "tool": "compute_properties",
+          "result": {
+            "canonical_smiles": "CC(=O)O",
+            "molecular_weight": 60.05200000000001,
+            "clogp": 0.09089999999999993,
+            "h_bond_donors": 1,
+            "h_bond_acceptors": 1,
+            "tpsa": 37.3,
+            "rotatable_bonds": 0,
+            "rule_of_five_violations": 0
+          }
+        },
+        {
+          "id": "m2-similarity",
+          "tool": "similar_known_drugs",
+          "result": {
+            "method": "Morgan radius 2, 2048 bits, Tanimoto similarity",
+            "catalog": "molscout_demo_reference_v1",
+            "catalog_size": 5,
+            "catalog_note": "Small offline teaching/demo set; not a comprehensive approved-drug index and not a source of efficacy or safety evidence.",
+            "matches": [
+              {
+                "name": "aspirin",
+                "smiles": "CC(=O)Oc1ccccc1C(=O)O",
+                "tanimoto": 0.24
+              },
+              {
+                "name": "acetaminophen",
+                "smiles": "CC(=O)Nc1ccc(O)cc1",
+                "tanimoto": 0.22727272727272727
+              },
+              {
+                "name": "ibuprofen",
+                "smiles": "CC(C)Cc1ccc([C@@H](C)C(=O)O)cc1",
+                "tanimoto": 0.18518518518518517
+              }
+            ]
+          }
+        }
+      ],
+      "rank": 2
+    },
+    {
+      "input_index": 2,
+      "input_smiles": "Cn1c(=O)c2c(ncn2C)n(C)c1=O",
+      "canonical_smiles": "Cn1c(=O)c2c(ncn2C)n(C)c1=O",
+      "valid": true,
+      "properties": {
+        "canonical_smiles": "Cn1c(=O)c2c(ncn2C)n(C)c1=O",
+        "molecular_weight": 194.194,
+        "clogp": -1.0293,
+        "h_bond_donors": 0,
+        "h_bond_acceptors": 3,
+        "tpsa": 61.82,
+        "rotatable_bonds": 0,
+        "rule_of_five_violations": 0
+      },
+      "claims": [
+        {
+          "text": "The input canonicalizes to Cn1c(=O)c2c(ncn2C)n(C)c1=O.",
+          "evidence_ids": [
+            "m3-validation"
+          ]
+        },
+        {
+          "text": "The computed descriptors have 0 Lipinski rule-of-five threshold violation(s); this is a heuristic count.",
+          "evidence_ids": [
+            "m3-properties"
+          ]
+        },
+        {
+          "text": "The nearest entry in the small bundled demo reference set is caffeine (Tanimoto 1.000); similarity does not imply shared activity or safety.",
+          "evidence_ids": [
+            "m3-similarity"
+          ]
+        },
+        {
+          "text": "Ranked #3 using 0 rule-of-five threshold violation(s); ties keep input order.",
+          "evidence_ids": [
+            "m3-properties"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "m3-validation",
+          "tool": "validate_smiles",
+          "result": {
+            "valid": true,
+            "input_smiles": "Cn1c(=O)c2c(ncn2C)n(C)c1=O",
+            "canonical_smiles": "Cn1c(=O)c2c(ncn2C)n(C)c1=O"
+          }
+        },
+        {
+          "id": "m3-properties",
+          "tool": "compute_properties",
+          "result": {
+            "canonical_smiles": "Cn1c(=O)c2c(ncn2C)n(C)c1=O",
+            "molecular_weight": 194.194,
+            "clogp": -1.0293,
+            "h_bond_donors": 0,
+            "h_bond_acceptors": 3,
+            "tpsa": 61.82,
+            "rotatable_bonds": 0,
+            "rule_of_five_violations": 0
+          }
+        },
+        {
+          "id": "m3-similarity",
+          "tool": "similar_known_drugs",
+          "result": {
+            "method": "Morgan radius 2, 2048 bits, Tanimoto similarity",
+            "catalog": "molscout_demo_reference_v1",
+            "catalog_size": 5,
+            "catalog_note": "Small offline teaching/demo set; not a comprehensive approved-drug index and not a source of efficacy or safety evidence.",
+            "matches": [
+              {
+                "name": "caffeine",
+                "smiles": "Cn1c(=O)c2c(ncn2C)n(C)c1=O",
+                "tanimoto": 1.0
+              },
+              {
+                "name": "acetaminophen",
+                "smiles": "CC(=O)Nc1ccc(O)cc1",
+                "tanimoto": 0.0975609756097561
+              },
+              {
+                "name": "aspirin",
+                "smiles": "CC(=O)Oc1ccccc1C(=O)O",
+                "tanimoto": 0.08888888888888889
+              }
+            ]
+          }
+        }
+      ],
+      "rank": 3
+    },
+    {
+      "input_index": 3,
+      "input_smiles": "not-a-smiles",
+      "valid": false,
+      "rank": null,
+      "claims": [
+        {
+          "text": "The input could not be parsed as a valid SMILES string.",
+          "evidence_ids": [
+            "m4-validation"
+          ]
+        }
+      ],
+      "evidence": [
+        {
+          "id": "m4-validation",
+          "tool": "validate_smiles",
+          "result": {
+            "valid": false,
+            "error": "Invalid SMILES: 'not-a-smiles'"
+          }
+        }
+      ]
+    }
+  ]
+}

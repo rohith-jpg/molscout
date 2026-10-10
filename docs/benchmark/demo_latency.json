@@ -1,0 +1,17 @@
+{
+  "scope": "in-process deterministic RDKit analysis; excludes browser/network time",
+  "python": "3.12.14",
+  "platform": "Windows-11-10.0.26300-SP0",
+  "processor": "AMD64 Family 26 Model 96 Stepping 0, AuthenticAMD",
+  "batch_size": 3,
+  "warmup_runs": 3,
+  "timed_runs": 50,
+  "median_seconds_per_batch": 0.0037432500002978486,
+  "p95_seconds_per_batch": 0.005249599999842758,
+  "median_molecules_per_second": 801.4425966102428,
+  "samples": [
+    "CCO",
+    "CC(=O)O",
+    "Cn1c(=O)c2c(ncn2C)n(C)c1=O"
+  ]
+}

@@ -1,174 +1,181 @@
 # MolScout
 
-**Evidence-backed molecular property triage.** Paste SMILES, inspect molecule structures and computed properties, compare model predictions, and see the tool outputs supporting each report claim.
+**An auditable molecule-triage demo that turns pasted SMILES into reproducible RDKit descriptors and evidence-linked notes.**
 
-MolScout is a portfolio project, not a clinical or drug-safety decision system. Predictions are assay-specific and should not be treated as experimental results.
+**Live demo:** Not deployed yet. The app is prepared for Streamlit Community Cloud; its account connection and deployment still need to be completed.
 
-## Project status
+**GitHub:** [rohith-jpg/molscout](https://github.com/rohith-jpg/molscout)
 
-Implemented now: RDKit validation and descriptors, Morgan fingerprints, a TDC/XGBoost baseline runner, an explicit-split Chemprop ensemble training runner, a MAPIE split-conformal evaluation runner for AqSolDB, a registry that loads saved endpoint models, a stdio MCP server, batch CLI analysis, evidence-linked claims, an offline five-compound similarity demo, and a small FastAPI browser UI. The batch rank is a transparent Lipinski-threshold heuristic; it is not an ADMET model or a drug-candidate score. The local similarity catalog is only for demonstrating the tool contract; it is not ChEMBL and is not a comprehensive approved-drug index.
+## Problem
 
-Not implemented yet: trained ADMET predictor artifacts, Chemprop prediction export/metrics, MoLFormer fine-tuning, atom attribution, a LangGraph/LLM planner, PubChem integration, and production deployment. The Chemprop and conformal runners are code paths only; no models have been trained and no performance, GPU-memory, latency, or cost numbers are claimed. The UI is local-only.
+Students and early-stage computational chemistry teams often need a quick way to inspect molecule strings and understand what a simple cheminformatics tool actually did. MolScout parses molecules, calculates a small set of reproducible descriptors, and shows the tool output behind each statement. It is an educational triage aid, not a drug-discovery decision system.
 
-## Initial scope
+## Who it helps
 
-The first benchmark targets are the TDC ADMET scaffold-split tasks:
+- Students learning SMILES and basic molecular descriptors.
+- Software and machine-learning engineers exploring chemistry tooling.
+- Small research or biotech teams that want a transparent first-pass structure check for a demo or teaching workflow.
+- Interviewers and reviewers who want to inspect the implementation and reproduce its outputs.
 
-| TDC task | Type | Official metric |
-|---|---|---|
-| hERG | Binary classification | AUROC |
-| AMES | Binary classification | AUROC |
-| BBB_Martins | Binary classification | AUROC |
-| Solubility_AqSolDB | Regression | MAE |
+## How it works
 
-Metrics are evaluated separately by endpoint. The app will not combine unlike metrics into a single score unless a user chooses an explicit ranking rule. TDC describes its benchmark group and protocol in its [ADMET overview](https://tdcommons.ai/benchmark/admet_group/overview/) and [leaderboard guide](https://tdcommons.ai/benchmark/overview/).
+1. Paste one SMILES string per line.
+2. RDKit checks each input and returns its canonical structure or an invalid-input result.
+3. RDKit calculates molecular weight, cLogP, hydrogen-bond counts, TPSA, and rotatable bonds.
+4. MolScout counts Lipinski threshold violations and ranks valid inputs with that explicit heuristic.
+5. Morgan fingerprints compare each valid molecule with five bundled example compounds.
+6. The interface links each report claim to the tool result that supports it.
 
-## Architecture
+The current public-demo path is deterministic and uses no LLM, trained ADMET model, network lookup, or paid API. The bundled reference list is small and is not a ChEMBL or comprehensive approved-drug index.
+
+## Workflow
+
+```mermaid
+flowchart TD
+    A[User pastes SMILES] --> B{Input present and within 100 rows?}
+    B -->|No| E[Show input error]
+    B -->|Yes| C[RDKit parses each molecule]
+    C --> D{Valid SMILES?}
+    D -->|No| I[Keep row and show validation evidence]
+    D -->|Yes| P[Calculate 2D descriptors]
+    P --> R[Count rule-of-five threshold violations]
+    P --> S[Compare Morgan fingerprints to 5 demo compounds]
+    R --> T[Rank valid inputs by violation count]
+    S --> T
+    I --> O[Show report and evidence IDs]
+    T --> O
+    O --> U[User inspects descriptor values and raw tool results]
+```
+
+## System architecture
 
 ```mermaid
 flowchart LR
-    UI[Web UI: SMILES batch or replay] --> API[FastAPI]
-    API --> G[LangGraph workflow]
-    G --> MCP[MCP chemistry tools]
-    MCP --> V[SMILES validation and properties]
-    MCP --> M[ADMET model registry]
-    M --> XGB[Morgan + XGBoost baseline]
-    M --> CP[Chemprop ensemble]
-    M --> MF[MoLFormer embeddings / optional LoRA]
-    MCP --> SIM[RDKit Tanimoto neighbors]
-    MCP --> PC[PubChem lookup, optional]
-    M --> CAL[MAPIE conformal output for regression]
-    MCP --> EX[Attribution and molecule image]
-    V --> R[Evidence-linked report]
-    SIM --> R
-    PC --> R
-    CAL --> R
-    EX --> R
-    G --> LS[LangSmith traces]
-    API --> LOG[Latency and measured cost]
+    subgraph Browser[User browser]
+        UI[Streamlit UI]
+    end
+    subgraph Runtime[Streamlit Community Cloud or local Python process]
+        APP[streamlit_app.py]
+        CORE[MolScout analysis functions]
+        RD[RDKit parsing and descriptors]
+        FP[Morgan fingerprints and Tanimoto]
+        REF[Five-entry demo reference list]
+    end
+    UI --> APP
+    APP --> CORE
+    CORE --> RD
+    CORE --> FP
+    FP --> REF
+    CORE --> OUT[Ranked report with evidence IDs]
+    OUT --> UI
+    FUT[Future: trained ADMET models, MCP tools, agent, external APIs] -. separate roadmap .-> CORE
 ```
 
-## Repository layout
+The current demo has no database or external API dependency. Optional benchmark, Chemprop, conformal, and MCP code in the repository is not called by this Streamlit demo.
 
-```text
-src/molscout/       Chemistry, analysis, similarity, benchmark, CLI, API, and MCP server code
-tests/              Unit tests for the implemented components
-outputs/            Local training outputs; do not commit large model files
+## Screenshots
+
+Screenshots should come from the running app and show its actual output. Save them in `docs/images/` with these names and captions:
+
+| File | Screen to capture | Caption |
+|---|---|---|
+| `home.png` | Landing page before analysis | MolScout explains its scope and accepts one SMILES per line. |
+| `input.png` | Text area with example molecules entered | The example batch contains three valid structures and one intentionally invalid input. |
+| `results.png` | Completed analysis with the first molecule expanded and raw tool results open | Descriptor values, heuristic rank, nearest demo-catalog entries, claims, evidence IDs, and raw results are visible. |
+| `invalid-input.png` | Expand the invalid molecule result | Invalid input is reported with validation evidence instead of being silently dropped. |
+| `batch-summary.png` | Capture the batch summary at the top of completed results | Counts of total, parsed, and invalid inputs are visible. |
+
+After capturing, add the real files and uncomment the matching Markdown. For example:
+
+```markdown
+![MolScout landing page](docs/images/home.png)
+![Molecule analysis and evidence](docs/images/results.png)
+![Invalid SMILES handling](docs/images/invalid-input.png)
+![Batch summary](docs/images/batch-summary.png)
 ```
 
-## Setup
+For a no-cost saved example, open the app with `?demo=1` or click **Replay saved no-cost example**. To capture a fresh result, paste the sample batch and click **Analyze molecules**.
 
-Python 3.11 is the target. RDKit installation varies by platform; if `pip install -e '.[dev]'` fails, use a conda-forge RDKit environment and install the remaining dependencies from `pyproject.toml`.
+## Results and metrics
 
-```bash
-python -m venv .venv
-# Activate the environment, then:
-python -m pip install -e '.[dev]'
-pytest
+Only the local deterministic analysis path has been timed so far. That timing is not an ADMET model score and excludes browser rendering and network latency.
+
+| Metric | Measured result | Measurement scope |
+|---|---:|---|
+| Median analysis time | 0.00374 s / 3-molecule batch | 50 timed local runs after 3 warmups; Windows 11, Python 3.12.14 |
+| P95 analysis time | 0.00525 s / 3-molecule batch | Same run; in-process RDKit analysis only |
+| Throughput at median | 801.4 molecules/s | Three fixed sample SMILES divided by measured median batch time |
+| ADMET AUROC / MAE | Not measured | No trained endpoint model artifacts are included |
+| Agent factual accuracy | Not measured | No LLM planner or agent evaluation set is implemented yet |
+
+The captured timing environment and sample inputs are recorded in [`docs/benchmark/demo_latency.json`](docs/benchmark/demo_latency.json). Re-measure on your deployment before comparing it with these local numbers:
+
+```powershell
+$env:PYTHONPATH = (Join-Path (Get-Location) 'src')
+python scripts/measure_demo_latency.py --repeats 50 --output docs/benchmark/demo_latency.json
 ```
 
-## First commands
+The baseline benchmark code reports per-endpoint AUROC for hERG, AMES, and BBB_Martins, and MAE for Solubility_AqSolDB on TDC's scaffold-held-out test data. It writes results only after the benchmark is actually run; no score is filled in here. A future agent comparison should use a fixed, manually reviewed question set and score the same answers with tools enabled and disabled.
 
-Validate a molecule and inspect calculated properties:
+## Tech stack
 
-```bash
-molscout validate 'CCO'
+| Tool | Used for |
+|---|---|
+| Python 3.12 | App runtime and reusable analysis code |
+| Streamlit | Free-host-friendly browser UI and no-cost demo replay |
+| RDKit | SMILES parsing, molecular descriptors, and Morgan fingerprints |
+| NumPy | Fingerprint arrays and measured evaluation utilities |
+| Tanimoto similarity | Transparent structural-neighbor score for the bundled examples |
+| PyTDC + XGBoost | Optional benchmark implementation; not part of the live demo and not trained yet |
+| Chemprop + MAPIE | Optional ensemble/conformal runners; no trained result artifacts yet |
+| MCP | Chemistry tool server available separately; the current UI calls the Python functions directly |
+
+## Run locally
+
+Python 3.12 is recommended. From the repository root:
+
+```powershell
+py -3.12 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+$env:STREAMLIT_CONFIG_DIR = (Join-Path (Get-Location) '.streamlit')
+streamlit run streamlit_app.py
 ```
 
-Analyze a batch, rank valid entries by the number of rule-of-five threshold
-violations, and inspect the result IDs cited by each claim:
+Open the local address printed by Streamlit. The saved example works without model weights, network APIs, or secrets.
 
-```bash
-molscout analyze 'CCO' 'CC(=O)O' 'not-a-smiles'
+To run the optional FastAPI/CLI/model code, install its corresponding extras from `pyproject.toml`. See the source modules before running benchmark commands; TDC downloads data, and model training consumes compute.
+
+## Deploy on Streamlit Community Cloud
+
+Streamlit Community Cloud is the chosen host because this version is a Python-only UI, and its free workflow deploys directly from a public GitHub repository. Its official setup expects a root-level entrypoint and requirements file. Choose Python 3.12 in Advanced settings to match this package's supported range.
+
+1. Push the latest `main` branch to [GitHub](https://github.com/rohith-jpg/molscout).
+2. Sign in at [share.streamlit.io](https://share.streamlit.io/) with the GitHub account that owns `rohith-jpg/molscout`.
+3. Select **Create app**, then choose repository `rohith-jpg/molscout`, branch `main`, and entrypoint `streamlit_app.py`.
+4. In **Advanced settings**, select Python 3.12.
+5. Choose an available app subdomain and click **Deploy**.
+6. Wait for the build to finish, open the generated URL, and test both the saved example and a custom SMILES batch.
+
+No secrets are required. The account authorization and final app creation have not been completed from this workspace, so a public URL is intentionally not claimed yet. Once Streamlit assigns the URL, put it below and use it as the README badge target:
+
+```markdown
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-1BAA86?logo=streamlit)](PASTE_DEPLOYED_URL_HERE)
 ```
 
-The nearest-neighbor result uses a bundled, five-molecule demo catalog so the
-command works offline. It reports Morgan radius 2 / 2048-bit Tanimoto similarity
-and explicitly identifies this catalog as incomplete.
+## Why this matters
 
-Run the local browser demo and JSON API:
+This gives a student or software engineer a quick, inspectable way to turn a molecule string into basic structure descriptors and see exactly where each displayed claim came from. Someone can use the saved demo today to learn how SMILES parsing, descriptor calculation, and simple fingerprint similarity fit together. The output is a starting point for exploration, not evidence that a molecule will work as a medicine.
 
-```bash
-python -m pip install -e '.[api]'
-uvicorn molscout.api:app --reload
-```
+## Future improvements
 
-Open `http://127.0.0.1:8000`. The `/api/analyze` endpoint returns the same
-evidence-linked report as the CLI, and `/docs` exposes the generated API schema.
+- Train and report the four TDC endpoint baselines with saved, reproducible metrics.
+- Export Chemprop ensemble predictions and compare them on the same fixed splits.
+- Add validated model-based explanation and uncertainty results.
+- Expand the reference catalog with a documented, licensed source.
+- Add MCP-backed tool orchestration only when each tool's output is validated and cited.
+- Add a manually reviewed evaluation set for agent answers and report both accuracy and failure cases.
 
-Train/evaluate Morgan + XGBoost on the TDC tasks (downloads benchmark data on first use):
+## Author
 
-```bash
-python -m molscout.benchmark --output-dir outputs/baseline --seeds 1 2 3 4 5
-```
-
-This writes each model to `outputs/baseline/<endpoint>/seed-<n>/model.json`, per-seed metrics to `summary.json`, mean/population-standard-deviation summaries to `aggregate.json`, and seeds, package versions, split description, fingerprint settings, and model parameters to `run_manifest.json`. TDC recommends at least five independent runs for leaderboard-style reporting. Never tune on the held-out test set.
-
-Train Chemprop ensembles on the exact TDC train/validation/test CSV partitions
-(this downloads data and trains models; start with one endpoint before running
-all four):
-
-```bash
-python -m pip install -e '.[gnn,benchmark]'
-molscout-chemprop --tasks Solubility_AqSolDB --seeds 1 --ensemble-size 5
-```
-
-The runner writes the exact CSV splits, full CLI command, training log, and model
-checkpoints under `outputs/chemprop/`. It passes three explicit CSVs to
-Chemprop, so Chemprop does not create a second split. It currently records the
-training artifact but does not yet export Chemprop test metrics or predictions.
-
-Measure 90% split-conformal intervals for AqSolDB. The TDC training partition
-fits the XGBoost model, TDC validation partition calibrates intervals, and the
-fixed scaffold test set is used once for measurement:
-
-```bash
-python -m pip install -e '.[benchmark,uncertainty]'
-molscout-conformal --seeds 1 2 3 4 5
-```
-
-This writes per-molecule bounds and reports empirical test coverage, MAE, and
-mean interval width. Split conformal's coverage guarantee depends on
-exchangeability; scaffold-held-out evaluation can violate that assumption, so
-the measured test coverage is reported without promising nominal coverage.
-
-After training, predict one supported endpoint with the saved seed models:
-
-```bash
-molscout predict 'CCO' --endpoint hERG
-```
-
-`ensemble_std` is the spread among the saved seed models, not calibrated uncertainty. The prediction command fails clearly when that endpoint has no model artifacts; it never substitutes a placeholder score.
-
-Run the MCP server over stdio:
-
-```bash
-python -m molscout.mcp_server
-```
-
-## Planned model and evaluation milestones
-
-1. Morgan fingerprints + XGBoost baseline across four tasks.
-2. Chemprop graph ensembles on the same explicit TDC partitions; add prediction export and metric comparison.
-3. Frozen MoLFormer embeddings across tasks; time-boxed LoRA vs full fine-tuning on AqSolDB only.
-4. MAPIE 90% nominal regression intervals on AqSolDB, with empirical test coverage and interval width reported. Calibration uses training/validation data only. Coverage is not guaranteed for every chemical subgroup or under scaffold distribution shift.
-5. MCP tools and a LangGraph workflow that calls deterministic tools, records evidence, and abstains when model uncertainty or similarity is concerning.
-6. Small UI, Docker, CI, tracing, and saved-run replay mode.
-
-## Scientific and operational limits
-
-- A prediction is a model estimate for a particular assay endpoint, not a universal property or a clinical claim.
-- Atom highlights are model attributions, not causal explanations.
-- Similarity is computed with a specified method (initially Morgan fingerprints and Tanimoto); similarity does not establish shared efficacy or safety.
-- External lookups are optional and cached where possible. A saved demo replay must work without network access, model hosting, or LLM credentials.
-- Results, latency, memory, and cost will be added only after they are measured.
-
-## Technologies
-
-**Used in the current implementation:** Python, RDKit, NumPy, scikit-learn,
-XGBoost, Typer, FastAPI (API extra), PyTDC (benchmark extra), pytest (tests),
-and MCP (agent extra).
-
-**Implemented as optional runners, not yet trained:** Chemprop and MAPIE. **Planned:** Hugging Face Transformers/PEFT, LangGraph,
-FastAPI, Docker, GitHub Actions, and LangSmith. They are listed as roadmap items,
-not as completed integrations.
+[Rohith Singhu](https://github.com/rohith-jpg) · [GitHub](https://github.com/rohith-jpg) · [LinkedIn](https://www.linkedin.com/in/rohith-singhu-24b8a0249)
