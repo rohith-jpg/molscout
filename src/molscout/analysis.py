@@ -136,7 +136,8 @@ def analyze_batch(smiles_list: list[str], *, neighbors: int = 3) -> dict[str, An
 
     return {
         "ranking_method": (
-            "Ascending count of Lipinski rule-of-five threshold violations; ties retain input order."
+            "Ascending count of Lipinski rule-of-five threshold violations; "
+            "ties retain input order."
         ),
         "disclaimer": DISCLAIMER,
         "molecules": reports,

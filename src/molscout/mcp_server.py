@@ -2,9 +2,13 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 from molscout.analysis import analyze_batch
 from molscout.chemistry import compute_properties as _compute_properties
 from molscout.chemistry import validate_smiles as _validate_smiles
+from molscout.prediction import predict_admet as _predict_admet
 from molscout.similarity import similar_known_drugs as _similar_known_drugs
 
 try:
@@ -37,6 +41,13 @@ def similar_known_drugs(smiles: str, limit: int = 3) -> dict[str, object]:
 def analyze_molecules(smiles_list: list[str]) -> dict[str, object]:
     """Analyze a batch and return ranked, evidence-linked heuristic reports."""
     return analyze_batch(smiles_list)
+
+
+@mcp.tool()
+def predict_admet(smiles: str, endpoint: str) -> dict[str, object]:
+    """Predict one supported endpoint using saved Morgan/XGBoost seed models."""
+    model_dir = Path(os.environ.get("MOLSCOUT_MODEL_DIR", "outputs/baseline"))
+    return _predict_admet(smiles, endpoint, model_dir=model_dir)
 
 
 if __name__ == "__main__":

@@ -6,9 +6,9 @@ MolScout is a portfolio project, not a clinical or drug-safety decision system. 
 
 ## Project status
 
-Implemented now: RDKit validation and descriptors, Morgan fingerprints, a TDC/XGBoost baseline runner, a stdio MCP server, batch CLI analysis, evidence-linked claims, an offline five-compound similarity demo, and a small FastAPI browser UI. The batch rank is a transparent Lipinski-threshold heuristic; it is not an ADMET model or a drug-candidate score. The local similarity catalog is only for demonstrating the tool contract; it is not ChEMBL and is not a comprehensive approved-drug index.
+Implemented now: RDKit validation and descriptors, Morgan fingerprints, a TDC/XGBoost baseline runner, a registry that loads saved endpoint models, a stdio MCP server, batch CLI analysis, evidence-linked claims, an offline five-compound similarity demo, and a small FastAPI browser UI. The batch rank is a transparent Lipinski-threshold heuristic; it is not an ADMET model or a drug-candidate score. The local similarity catalog is only for demonstrating the tool contract; it is not ChEMBL and is not a comprehensive approved-drug index.
 
-Not implemented yet: trained ADMET predictors, Chemprop, MoLFormer fine-tuning, conformal prediction, atom attribution, a LangGraph/LLM planner, PubChem integration, and a web UI. No model performance, GPU-memory, latency, or cost numbers are claimed.
+Not implemented yet: trained ADMET predictor artifacts, Chemprop, MoLFormer fine-tuning, conformal prediction, atom attribution, a LangGraph/LLM planner, PubChem integration, and production deployment. The UI is local-only. No model performance, GPU-memory, latency, or cost numbers are claimed.
 
 ## Initial scope
 
@@ -99,10 +99,18 @@ evidence-linked report as the CLI, and `/docs` exposes the generated API schema.
 Train/evaluate Morgan + XGBoost on the TDC tasks (downloads benchmark data on first use):
 
 ```bash
-python -m molscout.benchmark --output-dir outputs/baseline --seeds 1
+python -m molscout.benchmark --output-dir outputs/baseline --seeds 1 2 3 4 5
 ```
 
-The initial run uses one seed as a smoke test. For leaderboard-style reporting, use multiple independent runs; TDC's guide recommends at least five. Never tune on the held-out test set.
+This writes each model to `outputs/baseline/<endpoint>/seed-<n>/model.json`, per-seed metrics to `summary.json`, mean/population-standard-deviation summaries to `aggregate.json`, and seeds, package versions, split description, fingerprint settings, and model parameters to `run_manifest.json`. TDC recommends at least five independent runs for leaderboard-style reporting. Never tune on the held-out test set.
+
+After training, predict one supported endpoint with the saved seed models:
+
+```bash
+molscout predict 'CCO' --endpoint hERG
+```
+
+`ensemble_std` is the spread among the saved seed models, not calibrated uncertainty. The prediction command fails clearly when that endpoint has no model artifacts; it never substitutes a placeholder score.
 
 Run the MCP server over stdio:
 

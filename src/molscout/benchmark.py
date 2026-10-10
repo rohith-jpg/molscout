@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import platform
+from datetime import datetime, timezone
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
 
@@ -20,11 +23,23 @@ TASKS: dict[str, dict[str, str]] = {
     "Solubility_AqSolDB": {"kind": "regression", "metric": "MAE"},
 }
 
+BASELINE_PARAMETERS: dict[str, Any] = {
+    "n_estimators": 500,
+    "max_depth": 6,
+    "learning_rate": 0.04,
+    "subsample": 0.85,
+    "colsample_bytree": 0.85,
+    "reg_lambda": 1.0,
+    "n_jobs": 4,
+}
+
 
 def _columns(frame: Any) -> tuple[str, str]:
     """Find TDC molecule and target columns without assuming capitalization."""
     lowered = {str(column).lower(): str(column) for column in frame.columns}
-    smiles_col = next((lowered[k] for k in ("drug", "smiles", "canonical_smiles") if k in lowered), None)
+    smiles_col = next(
+        (lowered[k] for k in ("drug", "smiles", "canonical_smiles") if k in lowered), None
+    )
     target_col = next((lowered[k] for k in ("y", "label", "target") if k in lowered), None)
     if smiles_col is None or target_col is None:
         raise ValueError(f"Could not find molecule/target columns in {list(frame.columns)}")
@@ -46,7 +61,8 @@ def _features_and_labels(frame: Any) -> tuple[np.ndarray, np.ndarray]:
             )
         if not np.isfinite(y[index]):
             raise ValueError(
-                f"Missing/non-finite label at row {index}; refusing to silently drop benchmark examples"
+                f"Missing/non-finite label at row {index}; "
+                "refusing to silently drop benchmark examples"
             )
         canonical_smiles.append(Chem.MolToSmiles(mol))
     if not canonical_smiles:
@@ -57,28 +73,23 @@ def _features_and_labels(frame: Any) -> tuple[np.ndarray, np.ndarray]:
 def _make_model(kind: str, seed: int):
     if kind == "classification":
         return XGBClassifier(
-            n_estimators=500,
-            max_depth=6,
-            learning_rate=0.04,
-            subsample=0.85,
-            colsample_bytree=0.85,
-            reg_lambda=1.0,
+            **BASELINE_PARAMETERS,
             objective="binary:logistic",
             eval_metric="auc",
             random_state=seed,
-            n_jobs=4,
         )
     return XGBRegressor(
-        n_estimators=500,
-        max_depth=6,
-        learning_rate=0.04,
-        subsample=0.85,
-        colsample_bytree=0.85,
-        reg_lambda=1.0,
+        **BASELINE_PARAMETERS,
         objective="reg:squarederror",
         random_state=seed,
-        n_jobs=4,
     )
+
+
+def _package_version(distribution: str) -> str | None:
+    try:
+        return version(distribution)
+    except PackageNotFoundError:
+        return None
 
 
 def _aggregate_metrics(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -130,7 +141,10 @@ def run_baselines(output_dir: Path, seeds: list[int]) -> list[dict[str, Any]]:
             _ = valid
             model = _make_model(task["kind"], seed)
             model.fit(train_x, train_y)
-            prediction = model.predict_proba(test_x)[:, 1] if task["kind"] == "classification" else model.predict(test_x)
+            if task["kind"] == "classification":
+                prediction = model.predict_proba(test_x)[:, 1]
+            else:
+                prediction = model.predict(test_x)
             metric_value = (
                 float(roc_auc_score(test_y, prediction))
                 if task["kind"] == "classification"
@@ -155,6 +169,26 @@ def run_baselines(output_dir: Path, seeds: list[int]) -> list[dict[str, Any]]:
         json.dump(rows, handle, indent=2)
     with (output_dir / "aggregate.json").open("w", encoding="utf-8") as handle:
         json.dump(_aggregate_metrics(rows), handle, indent=2)
+    manifest = {
+        "created_at_utc": datetime.now(timezone.utc).isoformat(),
+        "python": platform.python_version(),
+        "packages": {
+            name: _package_version(name)
+            for name in ("PyTDC", "rdkit", "numpy", "scikit-learn", "xgboost")
+        },
+        "benchmark_split": (
+            "TDC ADMET Benchmark Group scaffold-held-out test; TDC default train/validation split"
+        ),
+        "tasks": TASKS,
+        "seeds": seeds,
+        "model": "Morgan-r2-2048 + XGBoost",
+        "fingerprint": {"type": "Morgan", "radius": 2, "bits": 2048},
+        "model_parameters": BASELINE_PARAMETERS,
+        "metrics_file": "summary.json",
+        "aggregate_file": "aggregate.json",
+    }
+    with (output_dir / "run_manifest.json").open("w", encoding="utf-8") as handle:
+        json.dump(manifest, handle, indent=2)
     return rows
 
 
