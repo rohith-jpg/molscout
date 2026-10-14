@@ -1,6 +1,6 @@
 {
   "ranking_method": "Ascending count of Lipinski rule-of-five threshold violations; ties retain input order.",
-  "disclaimer": "Exploratory cheminformatics only. Rule-of-five counts and fingerprint similarity are heuristics; this report contains no trained ADMET prediction or experimental result.",
+  "disclaimer": "Exploratory cheminformatics only. Rule-of-five counts and fingerprint similarity are heuristics. ADMET values are retrospective model outputs, not experimental evidence or proof of safety, efficacy, or drug suitability.",
   "molecules": [
     {
       "input_index": 0,
@@ -40,6 +40,30 @@
           "text": "Ranked #1 using 0 rule-of-five threshold violation(s); ties keep input order.",
           "evidence_ids": [
             "m1-properties"
+          ]
+        },
+        {
+          "text": "The hERG baseline output is 0.1042 (probability); five-seed spread is descriptive, not calibrated uncertainty.",
+          "evidence_ids": [
+            "m1-admet-hERG"
+          ]
+        },
+        {
+          "text": "The AMES baseline output is 0.2211 (probability); five-seed spread is descriptive, not calibrated uncertainty.",
+          "evidence_ids": [
+            "m1-admet-AMES"
+          ]
+        },
+        {
+          "text": "The BBB_Martins baseline output is 0.9197 (probability); five-seed spread is descriptive, not calibrated uncertainty.",
+          "evidence_ids": [
+            "m1-admet-BBB_Martins"
+          ]
+        },
+        {
+          "text": "The Solubility_AqSolDB baseline output is 0.3243 (log10(mol/L)); five-seed spread is descriptive, not calibrated uncertainty.",
+          "evidence_ids": [
+            "m1-admet-Solubility_AqSolDB"
           ]
         }
       ],
@@ -93,9 +117,235 @@
               }
             ]
           }
+        },
+        {
+          "id": "m1-admet-hERG",
+          "tool": "predict_admet",
+          "result": {
+            "endpoint": "hERG",
+            "kind": "classification",
+            "metric": "AUROC",
+            "unit": "probability",
+            "prediction": 0.10418114364147187,
+            "ensemble_std": 0.025335167704834294,
+            "ensemble_std_meaning": "between-seed model spread; not calibrated uncertainty",
+            "seed_predictions": [
+              {
+                "seed": 1,
+                "prediction": 0.08204896748065948
+              },
+              {
+                "seed": 2,
+                "prediction": 0.14080411195755005
+              },
+              {
+                "seed": 3,
+                "prediction": 0.08486557751893997
+              },
+              {
+                "seed": 4,
+                "prediction": 0.08430510014295578
+              },
+              {
+                "seed": 5,
+                "prediction": 0.12888196110725403
+              }
+            ],
+            "model": "Morgan-r2-2048 + XGBoost",
+            "fingerprint": {
+              "type": "Morgan",
+              "radius": 2,
+              "bits": 2048
+            },
+            "artifact_paths": [
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-1/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-2/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-3/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-4/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-5/model.json"
+            ]
+          }
+        },
+        {
+          "id": "m1-admet-AMES",
+          "tool": "predict_admet",
+          "result": {
+            "endpoint": "AMES",
+            "kind": "classification",
+            "metric": "AUROC",
+            "unit": "probability",
+            "prediction": 0.2211371123790741,
+            "ensemble_std": 0.010917628432552354,
+            "ensemble_std_meaning": "between-seed model spread; not calibrated uncertainty",
+            "seed_predictions": [
+              {
+                "seed": 1,
+                "prediction": 0.23147469758987427
+              },
+              {
+                "seed": 2,
+                "prediction": 0.21189278364181519
+              },
+              {
+                "seed": 3,
+                "prediction": 0.22052127122879028
+              },
+              {
+                "seed": 4,
+                "prediction": 0.20670057833194733
+              },
+              {
+                "seed": 5,
+                "prediction": 0.23509623110294342
+              }
+            ],
+            "model": "Morgan-r2-2048 + XGBoost",
+            "fingerprint": {
+              "type": "Morgan",
+              "radius": 2,
+              "bits": 2048
+            },
+            "artifact_paths": [
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-1/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-2/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-3/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-4/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-5/model.json"
+            ]
+          }
+        },
+        {
+          "id": "m1-admet-BBB_Martins",
+          "tool": "predict_admet",
+          "result": {
+            "endpoint": "BBB_Martins",
+            "kind": "classification",
+            "metric": "AUROC",
+            "unit": "probability",
+            "prediction": 0.9197122812271118,
+            "ensemble_std": 0.01154386633297023,
+            "ensemble_std_meaning": "between-seed model spread; not calibrated uncertainty",
+            "seed_predictions": [
+              {
+                "seed": 1,
+                "prediction": 0.9101212024688721
+              },
+              {
+                "seed": 2,
+                "prediction": 0.9228731989860535
+              },
+              {
+                "seed": 3,
+                "prediction": 0.9312700033187866
+              },
+              {
+                "seed": 4,
+                "prediction": 0.9026986360549927
+              },
+              {
+                "seed": 5,
+                "prediction": 0.9315983653068542
+              }
+            ],
+            "model": "Morgan-r2-2048 + XGBoost",
+            "fingerprint": {
+              "type": "Morgan",
+              "radius": 2,
+              "bits": 2048
+            },
+            "artifact_paths": [
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-1/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-2/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-3/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-4/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-5/model.json"
+            ]
+          }
+        },
+        {
+          "id": "m1-admet-Solubility_AqSolDB",
+          "tool": "predict_admet",
+          "result": {
+            "endpoint": "Solubility_AqSolDB",
+            "kind": "regression",
+            "metric": "MAE",
+            "unit": "log10(mol/L)",
+            "prediction": 0.32429881691932677,
+            "ensemble_std": 0.2228046918010826,
+            "ensemble_std_meaning": "between-seed model spread; not calibrated uncertainty",
+            "seed_predictions": [
+              {
+                "seed": 1,
+                "prediction": 0.4637953042984009
+              },
+              {
+                "seed": 2,
+                "prediction": 0.4191398620605469
+              },
+              {
+                "seed": 3,
+                "prediction": 0.4512310028076172
+              },
+              {
+                "seed": 4,
+                "prediction": 0.4067094624042511
+              },
+              {
+                "seed": 5,
+                "prediction": -0.11938154697418213
+              }
+            ],
+            "model": "Morgan-r2-2048 + XGBoost",
+            "fingerprint": {
+              "type": "Morgan",
+              "radius": 2,
+              "bits": 2048
+            },
+            "artifact_paths": [
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-1/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-2/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-3/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-4/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-5/model.json"
+            ]
+          }
         }
       ],
-      "rank": 1
+      "rank": 1,
+      "admet_predictions": [
+        {
+          "endpoint": "hERG",
+          "prediction": 0.10418114364147187,
+          "ensemble_std": 0.025335167704834294,
+          "kind": "classification",
+          "unit": "probability",
+          "evidence_id": "m1-admet-hERG"
+        },
+        {
+          "endpoint": "AMES",
+          "prediction": 0.2211371123790741,
+          "ensemble_std": 0.010917628432552354,
+          "kind": "classification",
+          "unit": "probability",
+          "evidence_id": "m1-admet-AMES"
+        },
+        {
+          "endpoint": "BBB_Martins",
+          "prediction": 0.9197122812271118,
+          "ensemble_std": 0.01154386633297023,
+          "kind": "classification",
+          "unit": "probability",
+          "evidence_id": "m1-admet-BBB_Martins"
+        },
+        {
+          "endpoint": "Solubility_AqSolDB",
+          "prediction": 0.32429881691932677,
+          "ensemble_std": 0.2228046918010826,
+          "kind": "regression",
+          "unit": "log10(mol/L)",
+          "evidence_id": "m1-admet-Solubility_AqSolDB"
+        }
+      ]
     },
     {
       "input_index": 1,
@@ -135,6 +385,30 @@
           "text": "Ranked #2 using 0 rule-of-five threshold violation(s); ties keep input order.",
           "evidence_ids": [
             "m2-properties"
+          ]
+        },
+        {
+          "text": "The hERG baseline output is 0.0112 (probability); five-seed spread is descriptive, not calibrated uncertainty.",
+          "evidence_ids": [
+            "m2-admet-hERG"
+          ]
+        },
+        {
+          "text": "The AMES baseline output is 0.2146 (probability); five-seed spread is descriptive, not calibrated uncertainty.",
+          "evidence_ids": [
+            "m2-admet-AMES"
+          ]
+        },
+        {
+          "text": "The BBB_Martins baseline output is 0.7365 (probability); five-seed spread is descriptive, not calibrated uncertainty.",
+          "evidence_ids": [
+            "m2-admet-BBB_Martins"
+          ]
+        },
+        {
+          "text": "The Solubility_AqSolDB baseline output is -0.4142 (log10(mol/L)); five-seed spread is descriptive, not calibrated uncertainty.",
+          "evidence_ids": [
+            "m2-admet-Solubility_AqSolDB"
           ]
         }
       ],
@@ -188,9 +462,235 @@
               }
             ]
           }
+        },
+        {
+          "id": "m2-admet-hERG",
+          "tool": "predict_admet",
+          "result": {
+            "endpoint": "hERG",
+            "kind": "classification",
+            "metric": "AUROC",
+            "unit": "probability",
+            "prediction": 0.011180989257991315,
+            "ensemble_std": 0.002578784921574169,
+            "ensemble_std_meaning": "between-seed model spread; not calibrated uncertainty",
+            "seed_predictions": [
+              {
+                "seed": 1,
+                "prediction": 0.009452281519770622
+              },
+              {
+                "seed": 2,
+                "prediction": 0.009211928583681583
+              },
+              {
+                "seed": 3,
+                "prediction": 0.0131349116563797
+              },
+              {
+                "seed": 4,
+                "prediction": 0.008808939717710018
+              },
+              {
+                "seed": 5,
+                "prediction": 0.015296884812414646
+              }
+            ],
+            "model": "Morgan-r2-2048 + XGBoost",
+            "fingerprint": {
+              "type": "Morgan",
+              "radius": 2,
+              "bits": 2048
+            },
+            "artifact_paths": [
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-1/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-2/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-3/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-4/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-5/model.json"
+            ]
+          }
+        },
+        {
+          "id": "m2-admet-AMES",
+          "tool": "predict_admet",
+          "result": {
+            "endpoint": "AMES",
+            "kind": "classification",
+            "metric": "AUROC",
+            "unit": "probability",
+            "prediction": 0.21463651061058045,
+            "ensemble_std": 0.00539570198024999,
+            "ensemble_std_meaning": "between-seed model spread; not calibrated uncertainty",
+            "seed_predictions": [
+              {
+                "seed": 1,
+                "prediction": 0.2058698832988739
+              },
+              {
+                "seed": 2,
+                "prediction": 0.22191356122493744
+              },
+              {
+                "seed": 3,
+                "prediction": 0.21441461145877838
+              },
+              {
+                "seed": 4,
+                "prediction": 0.21816104650497437
+              },
+              {
+                "seed": 5,
+                "prediction": 0.21282345056533813
+              }
+            ],
+            "model": "Morgan-r2-2048 + XGBoost",
+            "fingerprint": {
+              "type": "Morgan",
+              "radius": 2,
+              "bits": 2048
+            },
+            "artifact_paths": [
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-1/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-2/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-3/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-4/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-5/model.json"
+            ]
+          }
+        },
+        {
+          "id": "m2-admet-BBB_Martins",
+          "tool": "predict_admet",
+          "result": {
+            "endpoint": "BBB_Martins",
+            "kind": "classification",
+            "metric": "AUROC",
+            "unit": "probability",
+            "prediction": 0.7365362524986268,
+            "ensemble_std": 0.06129442843338932,
+            "ensemble_std_meaning": "between-seed model spread; not calibrated uncertainty",
+            "seed_predictions": [
+              {
+                "seed": 1,
+                "prediction": 0.7414973378181458
+              },
+              {
+                "seed": 2,
+                "prediction": 0.6970950961112976
+              },
+              {
+                "seed": 3,
+                "prediction": 0.8304541110992432
+              },
+              {
+                "seed": 4,
+                "prediction": 0.6492941975593567
+              },
+              {
+                "seed": 5,
+                "prediction": 0.7643405199050903
+              }
+            ],
+            "model": "Morgan-r2-2048 + XGBoost",
+            "fingerprint": {
+              "type": "Morgan",
+              "radius": 2,
+              "bits": 2048
+            },
+            "artifact_paths": [
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-1/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-2/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-3/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-4/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-5/model.json"
+            ]
+          }
+        },
+        {
+          "id": "m2-admet-Solubility_AqSolDB",
+          "tool": "predict_admet",
+          "result": {
+            "endpoint": "Solubility_AqSolDB",
+            "kind": "regression",
+            "metric": "MAE",
+            "unit": "log10(mol/L)",
+            "prediction": -0.41415989995002744,
+            "ensemble_std": 0.10388619632206672,
+            "ensemble_std_meaning": "between-seed model spread; not calibrated uncertainty",
+            "seed_predictions": [
+              {
+                "seed": 1,
+                "prediction": -0.44341346621513367
+              },
+              {
+                "seed": 2,
+                "prediction": -0.2899831235408783
+              },
+              {
+                "seed": 3,
+                "prediction": -0.3117460608482361
+              },
+              {
+                "seed": 4,
+                "prediction": -0.45067331194877625
+              },
+              {
+                "seed": 5,
+                "prediction": -0.574983537197113
+              }
+            ],
+            "model": "Morgan-r2-2048 + XGBoost",
+            "fingerprint": {
+              "type": "Morgan",
+              "radius": 2,
+              "bits": 2048
+            },
+            "artifact_paths": [
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-1/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-2/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-3/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-4/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-5/model.json"
+            ]
+          }
         }
       ],
-      "rank": 2
+      "rank": 2,
+      "admet_predictions": [
+        {
+          "endpoint": "hERG",
+          "prediction": 0.011180989257991315,
+          "ensemble_std": 0.002578784921574169,
+          "kind": "classification",
+          "unit": "probability",
+          "evidence_id": "m2-admet-hERG"
+        },
+        {
+          "endpoint": "AMES",
+          "prediction": 0.21463651061058045,
+          "ensemble_std": 0.00539570198024999,
+          "kind": "classification",
+          "unit": "probability",
+          "evidence_id": "m2-admet-AMES"
+        },
+        {
+          "endpoint": "BBB_Martins",
+          "prediction": 0.7365362524986268,
+          "ensemble_std": 0.06129442843338932,
+          "kind": "classification",
+          "unit": "probability",
+          "evidence_id": "m2-admet-BBB_Martins"
+        },
+        {
+          "endpoint": "Solubility_AqSolDB",
+          "prediction": -0.41415989995002744,
+          "ensemble_std": 0.10388619632206672,
+          "kind": "regression",
+          "unit": "log10(mol/L)",
+          "evidence_id": "m2-admet-Solubility_AqSolDB"
+        }
+      ]
     },
     {
       "input_index": 2,
@@ -230,6 +730,30 @@
           "text": "Ranked #3 using 0 rule-of-five threshold violation(s); ties keep input order.",
           "evidence_ids": [
             "m3-properties"
+          ]
+        },
+        {
+          "text": "The hERG baseline output is 0.7134 (probability); five-seed spread is descriptive, not calibrated uncertainty.",
+          "evidence_ids": [
+            "m3-admet-hERG"
+          ]
+        },
+        {
+          "text": "The AMES baseline output is 0.2113 (probability); five-seed spread is descriptive, not calibrated uncertainty.",
+          "evidence_ids": [
+            "m3-admet-AMES"
+          ]
+        },
+        {
+          "text": "The BBB_Martins baseline output is 0.9795 (probability); five-seed spread is descriptive, not calibrated uncertainty.",
+          "evidence_ids": [
+            "m3-admet-BBB_Martins"
+          ]
+        },
+        {
+          "text": "The Solubility_AqSolDB baseline output is -1.5078 (log10(mol/L)); five-seed spread is descriptive, not calibrated uncertainty.",
+          "evidence_ids": [
+            "m3-admet-Solubility_AqSolDB"
           ]
         }
       ],
@@ -283,9 +807,235 @@
               }
             ]
           }
+        },
+        {
+          "id": "m3-admet-hERG",
+          "tool": "predict_admet",
+          "result": {
+            "endpoint": "hERG",
+            "kind": "classification",
+            "metric": "AUROC",
+            "unit": "probability",
+            "prediction": 0.7133924245834351,
+            "ensemble_std": 0.04572219584449805,
+            "ensemble_std_meaning": "between-seed model spread; not calibrated uncertainty",
+            "seed_predictions": [
+              {
+                "seed": 1,
+                "prediction": 0.6797391772270203
+              },
+              {
+                "seed": 2,
+                "prediction": 0.7357152104377747
+              },
+              {
+                "seed": 3,
+                "prediction": 0.6848308444023132
+              },
+              {
+                "seed": 4,
+                "prediction": 0.6732955574989319
+              },
+              {
+                "seed": 5,
+                "prediction": 0.7933813333511353
+              }
+            ],
+            "model": "Morgan-r2-2048 + XGBoost",
+            "fingerprint": {
+              "type": "Morgan",
+              "radius": 2,
+              "bits": 2048
+            },
+            "artifact_paths": [
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-1/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-2/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-3/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-4/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/hERG/seed-5/model.json"
+            ]
+          }
+        },
+        {
+          "id": "m3-admet-AMES",
+          "tool": "predict_admet",
+          "result": {
+            "endpoint": "AMES",
+            "kind": "classification",
+            "metric": "AUROC",
+            "unit": "probability",
+            "prediction": 0.2112921416759491,
+            "ensemble_std": 0.025030095437173234,
+            "ensemble_std_meaning": "between-seed model spread; not calibrated uncertainty",
+            "seed_predictions": [
+              {
+                "seed": 1,
+                "prediction": 0.19469372928142548
+              },
+              {
+                "seed": 2,
+                "prediction": 0.22997064888477325
+              },
+              {
+                "seed": 3,
+                "prediction": 0.2505050301551819
+              },
+              {
+                "seed": 4,
+                "prediction": 0.18296682834625244
+              },
+              {
+                "seed": 5,
+                "prediction": 0.19832447171211243
+              }
+            ],
+            "model": "Morgan-r2-2048 + XGBoost",
+            "fingerprint": {
+              "type": "Morgan",
+              "radius": 2,
+              "bits": 2048
+            },
+            "artifact_paths": [
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-1/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-2/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-3/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-4/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/AMES/seed-5/model.json"
+            ]
+          }
+        },
+        {
+          "id": "m3-admet-BBB_Martins",
+          "tool": "predict_admet",
+          "result": {
+            "endpoint": "BBB_Martins",
+            "kind": "classification",
+            "metric": "AUROC",
+            "unit": "probability",
+            "prediction": 0.9794601202011108,
+            "ensemble_std": 0.004587135999436379,
+            "ensemble_std_meaning": "between-seed model spread; not calibrated uncertainty",
+            "seed_predictions": [
+              {
+                "seed": 1,
+                "prediction": 0.9845362305641174
+              },
+              {
+                "seed": 2,
+                "prediction": 0.9764692187309265
+              },
+              {
+                "seed": 3,
+                "prediction": 0.9768263697624207
+              },
+              {
+                "seed": 4,
+                "prediction": 0.985365092754364
+              },
+              {
+                "seed": 5,
+                "prediction": 0.9741036891937256
+              }
+            ],
+            "model": "Morgan-r2-2048 + XGBoost",
+            "fingerprint": {
+              "type": "Morgan",
+              "radius": 2,
+              "bits": 2048
+            },
+            "artifact_paths": [
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-1/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-2/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-3/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-4/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/BBB_Martins/seed-5/model.json"
+            ]
+          }
+        },
+        {
+          "id": "m3-admet-Solubility_AqSolDB",
+          "tool": "predict_admet",
+          "result": {
+            "endpoint": "Solubility_AqSolDB",
+            "kind": "regression",
+            "metric": "MAE",
+            "unit": "log10(mol/L)",
+            "prediction": -1.5078136682510377,
+            "ensemble_std": 0.23038897251841656,
+            "ensemble_std_meaning": "between-seed model spread; not calibrated uncertainty",
+            "seed_predictions": [
+              {
+                "seed": 1,
+                "prediction": -1.7014520168304443
+              },
+              {
+                "seed": 2,
+                "prediction": -1.5947927236557007
+              },
+              {
+                "seed": 3,
+                "prediction": -1.6888110637664795
+              },
+              {
+                "seed": 4,
+                "prediction": -1.4782897233963013
+              },
+              {
+                "seed": 5,
+                "prediction": -1.0757228136062622
+              }
+            ],
+            "model": "Morgan-r2-2048 + XGBoost",
+            "fingerprint": {
+              "type": "Morgan",
+              "radius": 2,
+              "bits": 2048
+            },
+            "artifact_paths": [
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-1/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-2/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-3/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-4/model.json",
+              "C:/Users/rohit/Documents/Codex/2026-10-09/files-pasted-by-the-user-act/outputs/MolScout/models/baseline/Solubility_AqSolDB/seed-5/model.json"
+            ]
+          }
         }
       ],
-      "rank": 3
+      "rank": 3,
+      "admet_predictions": [
+        {
+          "endpoint": "hERG",
+          "prediction": 0.7133924245834351,
+          "ensemble_std": 0.04572219584449805,
+          "kind": "classification",
+          "unit": "probability",
+          "evidence_id": "m3-admet-hERG"
+        },
+        {
+          "endpoint": "AMES",
+          "prediction": 0.2112921416759491,
+          "ensemble_std": 0.025030095437173234,
+          "kind": "classification",
+          "unit": "probability",
+          "evidence_id": "m3-admet-AMES"
+        },
+        {
+          "endpoint": "BBB_Martins",
+          "prediction": 0.9794601202011108,
+          "ensemble_std": 0.004587135999436379,
+          "kind": "classification",
+          "unit": "probability",
+          "evidence_id": "m3-admet-BBB_Martins"
+        },
+        {
+          "endpoint": "Solubility_AqSolDB",
+          "prediction": -1.5078136682510377,
+          "ensemble_std": 0.23038897251841656,
+          "kind": "regression",
+          "unit": "log10(mol/L)",
+          "evidence_id": "m3-admet-Solubility_AqSolDB"
+        }
+      ]
     },
     {
       "input_index": 3,

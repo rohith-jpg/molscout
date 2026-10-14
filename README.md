@@ -152,7 +152,7 @@ The runner writes metrics, a package/version manifest, and model artifacts under
 | Python 3.12 | App runtime and reusable analysis code |
 | Streamlit | Free-host-friendly browser UI and no-cost demo replay |
 | RDKit | SMILES parsing, molecular descriptors, and Morgan fingerprints |
-| NumPy | Fingerprint arrays and measured evaluation utilities |
+| NumPy + scikit-learn | Fingerprint arrays and XGBoost's sklearn model API |
 | Tanimoto similarity | Transparent structural-neighbor score for the bundled examples |
 | PyTDC + XGBoost | Five-seed ADMET baseline; saved XGBoost models power the live demo |
 | Chemprop + MAPIE | Optional ensemble/conformal runners; no trained result artifacts yet |
@@ -170,7 +170,7 @@ $env:STREAMLIT_CONFIG_DIR = (Join-Path (Get-Location) '.streamlit')
 streamlit run streamlit_app.py
 ```
 
-Open the local address printed by Streamlit. The saved example can be replayed without network APIs or secrets. Click **Analyze molecules** to run the bundled trained baseline models on the entered SMILES.
+Open the local address printed by Streamlit. The saved example replays actual outputs from the bundled baseline models without network APIs or secrets. Click **Analyze molecules** to score a different SMILES batch.
 
 To run the optional FastAPI/CLI/model code, install its corresponding extras from `pyproject.toml`. The benchmark command downloads TDC data on its first run and saves trained models locally. The app uses the checked-in inference copies under `models/baseline/`.
 
