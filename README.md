@@ -2,7 +2,9 @@
 
 **An auditable molecule-triage demo that turns pasted SMILES into reproducible RDKit descriptors and evidence-linked notes.**
 
-**Live demo:** Not deployed yet. The app is prepared for Streamlit Community Cloud; its account connection and deployment still need to be completed.
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Open%20App-1BAA86?logo=streamlit)](https://molscout-rohith-jpg.streamlit.app/)
+
+**Live demo:** [molscout-rohith-jpg.streamlit.app](https://molscout-rohith-jpg.streamlit.app/)
 
 **GitHub:** [rohith-jpg/molscout](https://github.com/rohith-jpg/molscout)
 
@@ -148,7 +150,7 @@ To run the optional FastAPI/CLI/model code, install its corresponding extras fro
 
 ## Deploy on Streamlit Community Cloud
 
-Streamlit Community Cloud is the chosen host because this version is a Python-only UI, and its free workflow deploys directly from a public GitHub repository. Its official setup expects a root-level entrypoint and requirements file. Choose Python 3.12 in Advanced settings to match this package's supported range.
+Streamlit Community Cloud hosts the public demo because this version is a Python-only UI, and its free workflow deploys directly from a public GitHub repository. The deployed app uses the root-level entrypoint and requirements file, with Python 3.12 selected in Advanced settings.
 
 1. Push the latest `main` branch to [GitHub](https://github.com/rohith-jpg/molscout).
 2. Sign in at [share.streamlit.io](https://share.streamlit.io/) with the GitHub account that owns `rohith-jpg/molscout`.
@@ -157,11 +159,7 @@ Streamlit Community Cloud is the chosen host because this version is a Python-on
 5. Choose an available app subdomain and click **Deploy**.
 6. Wait for the build to finish, open the generated URL, and test both the saved example and a custom SMILES batch.
 
-No secrets are required. The account authorization and final app creation have not been completed from this workspace, so a public URL is intentionally not claimed yet. Once Streamlit assigns the URL, put it below and use it as the README badge target:
-
-```markdown
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-Streamlit-1BAA86?logo=streamlit)](PASTE_DEPLOYED_URL_HERE)
-```
+No secrets are required. The public app is live at [molscout-rohith-jpg.streamlit.app](https://molscout-rohith-jpg.streamlit.app/). After pushing changes to `main`, Streamlit Community Cloud rebuilds the app automatically.
 
 ## Why this matters
 
@@ -179,3 +177,4 @@ This gives a student or software engineer a quick, inspectable way to turn a mol
 ## Author
 
 [Rohith Singhu](https://github.com/rohith-jpg) · [GitHub](https://github.com/rohith-jpg) · [LinkedIn](https://www.linkedin.com/in/rohith-singhu-24b8a0249)
+
