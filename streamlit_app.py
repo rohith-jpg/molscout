@@ -213,7 +213,7 @@ if benchmark_path.exists():
     st.subheader("Offline model benchmark")
     st.caption(
         "These are measured five-seed Morgan + XGBoost results on TDC scaffold splits. "
-        "The live molecule demo above does not use these trained models."
+        "The same saved baseline models power the live molecule scores above."
     )
     leaderboard = benchmark["leaderboard_reference"]
     rows = []
