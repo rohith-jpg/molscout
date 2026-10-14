@@ -11,7 +11,12 @@ import numpy as np
 import pandas as pd
 from sklearn.metrics import mean_absolute_error
 
-from molscout.benchmark import _features_and_labels, _make_model
+from molscout.benchmark import (
+    _columns,
+    _features_and_labels,
+    _features_labels_and_exclusions,
+    _make_model,
+)
 
 
 def evaluate_split_conformal(
@@ -38,7 +43,7 @@ def evaluate_split_conformal(
 
     train_x, train_y = _features_and_labels(train)
     calibration_x, calibration_y = _features_and_labels(calibration)
-    test_x, test_y = _features_and_labels(test)
+    test_x, test_y, excluded_test_rows = _features_labels_and_exclusions(test)
     estimator = _make_model("regression", seed)
     estimator.fit(train_x, train_y)
     conformal = SplitConformalRegressor(
@@ -56,7 +61,9 @@ def evaluate_split_conformal(
         "confidence_level": confidence_level,
         "n_train": int(len(train_y)),
         "n_calibration": int(len(calibration_y)),
+        "n_test_raw": int(len(test)),
         "n_test": int(len(test_y)),
+        "n_test_excluded": len(excluded_test_rows),
         "test_mae": float(mean_absolute_error(test_y, point_predictions)),
         "test_empirical_coverage": float(np.mean(covered)),
         "test_mean_interval_width": float(np.mean(width)),
@@ -67,8 +74,16 @@ def evaluate_split_conformal(
         ),
     }
     output_dir.mkdir(parents=True, exist_ok=True)
+    smiles_col, _ = _columns(test)
+    excluded_indices = {row["row"] for row in excluded_test_rows}
+    valid_test_smiles = [
+        str(smiles)
+        for row_index, smiles in enumerate(test[smiles_col].astype(str))
+        if row_index not in excluded_indices
+    ]
     pd.DataFrame(
         {
+            "smiles": valid_test_smiles,
             "y_true": test_y,
             "y_pred": point_predictions,
             "lower_bound": lower,
@@ -77,6 +92,9 @@ def evaluate_split_conformal(
             "interval_width": width,
         }
     ).to_csv(output_dir / "predictions.csv", index=False)
+    (output_dir / "excluded_test_rows.json").write_text(
+        json.dumps(excluded_test_rows, indent=2), encoding="utf-8"
+    )
     (output_dir / "metrics.json").write_text(json.dumps(metrics, indent=2), encoding="utf-8")
     return metrics
 

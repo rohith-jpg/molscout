@@ -145,6 +145,30 @@ python -m molscout.benchmark --output-dir outputs/baseline --seeds 1 2 3 4 5
 
 The runner writes metrics, a package/version manifest, and model artifacts under `outputs/baseline/`. Its 20 model JSON files are copied to `models/baseline/` and versioned so the public app can load them; downloaded TDC data and run outputs remain ignored by Git. A future agent comparison should use a fixed, manually reviewed question set and score the same answers with tools enabled and disabled.
 
+### Conformal prediction
+
+The optional AqSolDB split-conformal runner trains on TDC's train partition, uses validation as the calibration partition, and measures 90% interval coverage on the fixed scaffold test set. It writes per-molecule intervals, test MAE, empirical coverage, mean interval width, and a list of invalid test SMILES excluded from scoring. No conformal result is published until this command is run successfully:
+
+```powershell
+python -m pip install -e ".[uncertainty]"
+$env:PYTHONPATH = (Join-Path (Get-Location) 'src')
+python -m molscout.conformal --output-dir outputs/conformal --seeds 1 2 3 4 5 --confidence-level 0.9
+```
+
+The reported test coverage is an observed result, not a guarantee: scaffold-held-out molecules can differ from the train and calibration distributions, which weakens the exchangeability assumption behind split conformal prediction.
+
+### Chemprop graph neural network comparison
+
+The Chemprop runner now exports test-set predictions after training and reports the same task metric used by the XGBoost baseline (AUROC for hERG, AMES, and BBB_Martins; MAE for AqSolDB). It feeds TDC's train, validation, and scaffold test files directly to Chemprop, averages its internal model ensemble, and records invalid test rows. Chemprop is optional and is not installed in the Streamlit app. Start with one endpoint and one seed on a GPU runtime before expanding the run:
+
+```powershell
+python -m pip install -e ".[benchmark,gnn]"
+$env:PYTHONPATH = (Join-Path (Get-Location) 'src')
+python -m molscout.chemprop_runner --output-dir outputs/chemprop --tasks hERG --seeds 1 --ensemble-size 5
+```
+
+The runner writes each seed's test scores, prediction CSV, excluded-row list, and training/prediction logs. Run all endpoints and seeds only after checking runtime and GPU memory; no Chemprop result is claimed in the README until the runner completes and its measured output is reviewed.
+
 ## Tech stack
 
 | Tool | Used for |
@@ -155,7 +179,7 @@ The runner writes metrics, a package/version manifest, and model artifacts under
 | NumPy + scikit-learn | Fingerprint arrays and XGBoost's sklearn model API |
 | Tanimoto similarity | Transparent structural-neighbor score for the bundled examples |
 | PyTDC + XGBoost | Five-seed ADMET baseline; saved XGBoost models power the live demo |
-| Chemprop + MAPIE | Optional ensemble/conformal runners; no trained result artifacts yet |
+| Chemprop + MAPIE | Optional GNN ensemble and split-conformal evaluation runners; no measured results published yet |
 | MCP | Chemistry tool server available separately; the current UI calls the Python functions directly |
 
 ## Run locally
