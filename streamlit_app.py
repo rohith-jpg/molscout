@@ -14,18 +14,21 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from molscout.analysis import analyze_batch  # noqa: E402
+from molscout.prediction import ENDPOINTS, predict_admet  # noqa: E402
 
 st.set_page_config(page_title="MolScout | Molecule triage", page_icon="🧪", layout="wide")
 st.title("🧪 MolScout")
 st.subheader("Evidence-backed molecule triage")
 st.write(
     "Paste SMILES to check whether each structure parses, review calculated 2D "
-    "descriptors, and find its closest match in a small offline reference set."
+    "descriptors, inspect four trained ADMET baseline scores, and find its closest "
+    "match in a small offline reference set."
 )
 st.info(
-    "Demo scope: this version uses deterministic RDKit descriptors and a "
-    "five-compound teaching catalog. It does **not** run trained ADMET models "
-    "or establish whether a molecule is safe, effective, or a drug candidate."
+    "Demo scope: ADMET scores come from five-seed Morgan + XGBoost models trained "
+    "on TDC scaffold splits. Seed-to-seed spread is not calibrated uncertainty. "
+    "These retrospective benchmark models do not establish whether a molecule is "
+    "safe, effective, or a drug candidate."
 )
 
 with st.sidebar:
@@ -35,7 +38,8 @@ with st.sidebar:
         "2. Calculates molecular weight, cLogP, H-bond counts, TPSA, and rotatable bonds.\n"
         "3. Counts Lipinski threshold violations as a simple heuristic.\n"
         "4. Finds nearest entries using Morgan fingerprints and Tanimoto similarity.\n"
-        "5. Links report claims to their supporting tool results."
+        "5. Scores four ADMET endpoints with five trained baseline seeds each.\n"
+        "6. Links report claims to their supporting tool results."
     )
     st.caption("No network lookups or model API keys are used in this demo.")
 
@@ -63,7 +67,48 @@ if st.button("Analyze molecules", type="primary", width="stretch"):
     else:
         try:
             started = time.perf_counter()
-            st.session_state["molscout_result"] = analyze_batch(smiles_list)
+            result = analyze_batch(smiles_list)
+            for molecule in result["molecules"]:
+                if not molecule["valid"]:
+                    continue
+                predictions = []
+                for endpoint in ENDPOINTS:
+                    prediction = predict_admet(
+                        molecule["canonical_smiles"], endpoint
+                    )
+                    evidence_id = (
+                        f"m{molecule['input_index'] + 1}-admet-{endpoint}"
+                    )
+                    molecule["evidence"].append(
+                        {
+                            "id": evidence_id,
+                            "tool": "predict_admet",
+                            "result": prediction,
+                        }
+                    )
+                    predictions.append(
+                        {
+                            "endpoint": endpoint,
+                            "prediction": prediction["prediction"],
+                            "ensemble_std": prediction["ensemble_std"],
+                            "kind": prediction["kind"],
+                            "unit": prediction["unit"],
+                            "evidence_id": evidence_id,
+                        }
+                    )
+                    molecule["claims"].append(
+                        {
+                            "text": (
+                                f"The {endpoint} baseline output is "
+                                f"{prediction['prediction']:.4f} ({prediction['unit']}); "
+                                "the five-seed spread is descriptive, not calibrated "
+                                "uncertainty."
+                            ),
+                            "evidence_ids": [evidence_id],
+                        }
+                    )
+                molecule["admet_predictions"] = predictions
+            st.session_state["molscout_result"] = result
             st.session_state["molscout_elapsed"] = time.perf_counter() - started
         except (ValueError, RuntimeError) as exc:
             st.error(str(exc))
@@ -92,7 +137,36 @@ def render_molecule(report: dict[str, Any]) -> None:
                 f"TPSA: {props['tpsa']:.1f} Å² · Rotatable bonds: "
                 f"{props['rotatable_bonds']} · Rank uses violation count only."
             )
-            matches = report["evidence"][-1]["result"]["matches"]
+            predictions = report.get("admet_predictions", [])
+            if predictions:
+                st.markdown("**Five-seed ADMET baseline outputs**")
+                st.dataframe(
+                    [
+                        {
+                            "Endpoint": item["endpoint"],
+                            (
+                                "P(class 1)" if item["kind"] == "classification"
+                                else "Predicted log10(mol/L)"
+                            ): f"{item['prediction']:.4f}",
+                            "Seed spread (SD)": f"{item['ensemble_std']:.4f}",
+                            "Evidence": item["evidence_id"],
+                        }
+                        for item in predictions
+                    ],
+                    hide_index=True,
+                    width="stretch",
+                )
+                st.caption(
+                    "Classification values are model scores for dataset class 1. "
+                    "Seed spread is not a probability interval or calibrated confidence. "
+                    "Scores do not determine the heuristic rank."
+                )
+            similarity_result = next(
+                item["result"]
+                for item in report["evidence"]
+                if item["tool"] == "similar_known_drugs"
+            )
+            matches = similarity_result["matches"]
             st.markdown("**Closest entries in the demo catalog**")
             if matches:
                 st.dataframe(

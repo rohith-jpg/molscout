@@ -1,6 +1,6 @@
 # MolScout
 
-**An auditable molecule-triage demo that turns pasted SMILES into reproducible RDKit descriptors and evidence-linked notes.**
+**An auditable molecule-triage demo that combines reproducible RDKit descriptors with four measured TDC ADMET baseline predictions and evidence-linked notes.**
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Open%20App-1BAA86?logo=streamlit)](https://molscout-rohith-jpg.streamlit.app/)
 
@@ -23,12 +23,12 @@ Students and early-stage computational chemistry teams often need a quick way to
 
 1. Paste one SMILES string per line.
 2. RDKit checks each input and returns its canonical structure or an invalid-input result.
-3. RDKit calculates molecular weight, cLogP, hydrogen-bond counts, TPSA, and rotatable bonds.
-4. MolScout counts Lipinski threshold violations and ranks valid inputs with that explicit heuristic.
-5. Morgan fingerprints compare each valid molecule with five bundled example compounds.
-6. The interface links each report claim to the tool result that supports it.
+3. RDKit calculates molecular weight, cLogP, hydrogen-bond counts, TPSA, rotatable bonds, and Morgan fingerprints.
+4. Five trained Morgan + XGBoost seeds score each molecule on hERG, AMES, BBB_Martins, and Solubility_AqSolDB.
+5. MolScout counts Lipinski threshold violations and ranks valid inputs with that explicit heuristic; ADMET scores are shown separately and do not affect rank.
+6. The interface links each descriptor, similarity statement, and ADMET score to its supporting tool result.
 
-The current public-demo path is deterministic and uses no LLM, trained ADMET model, network lookup, or paid API. The bundled reference list is small and is not a ChEMBL or comprehensive approved-drug index.
+The public demo runs bundled baseline models locally in the app process and uses no LLM, network lookup, or paid API. The bundled reference list is small and is not a ChEMBL or comprehensive approved-drug index.
 
 ## Workflow
 
@@ -42,8 +42,10 @@ flowchart TD
     D -->|Yes| P[Calculate 2D descriptors]
     P --> R[Count rule-of-five threshold violations]
     P --> S[Compare Morgan fingerprints to 5 demo compounds]
+    P --> M[Score 4 ADMET endpoints with 5 XGBoost seeds each]
     R --> T[Rank valid inputs by violation count]
     S --> T
+    M --> O[Show baseline scores and seed spread]
     I --> O[Show report and evidence IDs]
     T --> O
     O --> U[User inspects descriptor values and raw tool results]
@@ -62,18 +64,20 @@ flowchart LR
         RD[RDKit parsing and descriptors]
         FP[Morgan fingerprints and Tanimoto]
         REF[Five-entry demo reference list]
+        MODELS[20 bundled XGBoost models]
     end
     UI --> APP
     APP --> CORE
     CORE --> RD
     CORE --> FP
     FP --> REF
+    CORE --> MODELS
     CORE --> OUT[Ranked report with evidence IDs]
     OUT --> UI
-    FUT[Future: trained ADMET models, MCP tools, agent, external APIs] -. separate roadmap .-> CORE
+    FUT[Future: MCP tools, agent, external APIs] -. separate roadmap .-> CORE
 ```
 
-The current demo has no database or external API dependency. Optional benchmark, Chemprop, conformal, and MCP code in the repository is not called by this Streamlit demo.
+The current demo has no database or external API dependency. It loads the 20 bundled baseline models for the four measured endpoints. Chemprop, conformal, and MCP code in the repository is not called by this Streamlit demo.
 
 ## Screenshots
 
@@ -83,7 +87,7 @@ Screenshots should come from the running app and show its actual output. Save th
 |---|---|---|
 | `home.png` | Landing page before analysis | MolScout explains its scope and accepts one SMILES per line. |
 | `input.png` | Text area with example molecules entered | The example batch contains three valid structures and one intentionally invalid input. |
-| `results.png` | Completed analysis with the first molecule expanded and raw tool results open | Descriptor values, heuristic rank, nearest demo-catalog entries, claims, evidence IDs, and raw results are visible. |
+| `results.png` | Completed analysis with the first molecule expanded and raw tool results open | Descriptor values, four ADMET baseline outputs, heuristic rank, nearest demo-catalog entries, claims, evidence IDs, and raw results are visible. |
 | `invalid-input.png` | Expand the invalid molecule result | Invalid input is reported with validation evidence instead of being silently dropped. |
 | `batch-summary.png` | Capture the batch summary at the top of completed results | Counts of total, parsed, and invalid inputs are visible. |
 
@@ -128,7 +132,7 @@ This is a measured CPU baseline using 2,048-bit Morgan radius-2 fingerprints and
 | BBB_Martins (AUROC) | 0.871 ± 0.016 | 0.924 ± 0.003 (MiniMol) |
 | Solubility_AqSolDB (MAE) | 1.300 ± 0.035 | 0.741 ± 0.013 (MiniMol) |
 
-The MolScout values are the results of this repository's fixed baseline configuration. The leaderboard values are external reference numbers, not reproduced runs. In the TDC 1.1.15 AqSolDB test data, RDKit could not parse two rows; those rows are recorded and excluded, so the MolScout MAE uses 1,995 of 1,997 test rows. The other three endpoints scored every test row. See the [full per-seed results and run manifest](docs/benchmark/baseline_results.json) for package versions, row counts, parameters, and excluded SMILES. TDC's official pages list the benchmark metrics and current leaderboard results: [hERG](https://tdcommons.ai/benchmark/admet_group/20herg/), [AMES](https://tdcommons.ai/benchmark/admet_group/21ames/), [BBB_Martins](https://tdcommons.ai/benchmark/admet_group/07bbb/), and [Solubility_AqSolDB](https://tdcommons.ai/benchmark/admet_group/06aqsol/). Leaderboard values were checked on 2026-10-14 and can change.
+The MolScout values are the results of this repository's fixed baseline configuration. The leaderboard values are external reference numbers, not reproduced runs. In the TDC 1.1.15 AqSolDB test data, RDKit could not parse two rows; those rows are recorded and excluded, so the MolScout MAE uses 1,995 of 1,997 test rows. The other three endpoints scored every test row. See the [full per-seed results and run manifest](docs/benchmark/baseline_results.json) for package versions, row counts, parameters, and excluded SMILES. TDC's official pages list the benchmark metrics and current leaderboard results: [hERG](https://tdcommons.ai/benchmark/admet_group/20herg/), [AMES](https://tdcommons.ai/benchmark/admet_group/21ames/), [BBB_Martins](https://tdcommons.ai/benchmark/admet_group/07bbb/), and [Solubility_AqSolDB](https://tdcommons.ai/benchmark/admet_group/06aqsol/). Leaderboard values were checked on 2026-10-14 and can change. Five seeds are included as a small ensemble; the standard deviation displayed in the app is between-model spread, not calibrated prediction uncertainty. Classification outputs are scores for dataset class 1 and must be interpreted using each dataset's label definition.
 
 To rerun from a Python 3.12 environment, first install MolScout's core dependencies and then the small TDC runtime dependency set. The requirements file avoids pulling PyTDC's unrelated model-serving dependencies:
 
@@ -139,7 +143,7 @@ $env:PYTHONPATH = (Join-Path (Get-Location) 'src')
 python -m molscout.benchmark --output-dir outputs/baseline --seeds 1 2 3 4 5
 ```
 
-The runner writes metrics, a package/version manifest, and model artifacts under `outputs/baseline/`. Model artifacts and downloaded TDC data are ignored by Git; the compact measured report above is versioned. The live Streamlit demo still shows chemistry descriptors and similarity only; it does not load these trained baseline models. A future agent comparison should use a fixed, manually reviewed question set and score the same answers with tools enabled and disabled.
+The runner writes metrics, a package/version manifest, and model artifacts under `outputs/baseline/`. Its 20 model JSON files are copied to `models/baseline/` and versioned so the public app can load them; downloaded TDC data and run outputs remain ignored by Git. A future agent comparison should use a fixed, manually reviewed question set and score the same answers with tools enabled and disabled.
 
 ## Tech stack
 
@@ -150,7 +154,7 @@ The runner writes metrics, a package/version manifest, and model artifacts under
 | RDKit | SMILES parsing, molecular descriptors, and Morgan fingerprints |
 | NumPy | Fingerprint arrays and measured evaluation utilities |
 | Tanimoto similarity | Transparent structural-neighbor score for the bundled examples |
-| PyTDC + XGBoost | Five-seed ADMET baseline; not part of the live demo |
+| PyTDC + XGBoost | Five-seed ADMET baseline; saved XGBoost models power the live demo |
 | Chemprop + MAPIE | Optional ensemble/conformal runners; no trained result artifacts yet |
 | MCP | Chemistry tool server available separately; the current UI calls the Python functions directly |
 
@@ -166,9 +170,9 @@ $env:STREAMLIT_CONFIG_DIR = (Join-Path (Get-Location) '.streamlit')
 streamlit run streamlit_app.py
 ```
 
-Open the local address printed by Streamlit. The saved example works without model weights, network APIs, or secrets.
+Open the local address printed by Streamlit. The saved example can be replayed without network APIs or secrets. Click **Analyze molecules** to run the bundled trained baseline models on the entered SMILES.
 
-To run the optional FastAPI/CLI/model code, install its corresponding extras from `pyproject.toml`. The benchmark command downloads TDC data on its first run and saves trained models locally; benchmark model files are not part of the live demo.
+To run the optional FastAPI/CLI/model code, install its corresponding extras from `pyproject.toml`. The benchmark command downloads TDC data on its first run and saves trained models locally. The app uses the checked-in inference copies under `models/baseline/`.
 
 ## Deploy on Streamlit Community Cloud
 

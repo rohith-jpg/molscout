@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from functools import lru_cache
 from pathlib import Path
 from typing import Any
 
@@ -20,6 +21,8 @@ ENDPOINTS: dict[str, dict[str, str | None]] = {
     },
 }
 
+DEFAULT_MODEL_DIR = Path(__file__).resolve().parents[2] / "models" / "baseline"
+
 
 def _seed_from_path(path: Path) -> int:
     try:
@@ -28,11 +31,21 @@ def _seed_from_path(path: Path) -> int:
         raise ValueError(f"Unexpected model artifact directory: {path.parent}") from exc
 
 
+@lru_cache(maxsize=32)
+def _load_model(path: str, kind: str) -> Any:
+    """Load each small model once per app process."""
+    from xgboost import XGBClassifier, XGBRegressor
+
+    model = XGBClassifier() if kind == "classification" else XGBRegressor()
+    model.load_model(path)
+    return model
+
+
 def predict_admet(
     smiles: str,
     endpoint: str,
     *,
-    model_dir: Path = Path("outputs/baseline"),
+    model_dir: Path = DEFAULT_MODEL_DIR,
 ) -> dict[str, Any]:
     """Predict with every saved baseline seed and report their uncalibrated spread.
 
@@ -53,15 +66,12 @@ def predict_admet(
             "Run the TDC baseline benchmark first."
         )
 
-    from xgboost import XGBClassifier, XGBRegressor
-
     spec = ENDPOINTS[endpoint]
     kind = spec["kind"]
     values: list[float] = []
     fingerprint = morgan_fingerprint(smiles).reshape(1, -1)
     for artifact in artifacts:
-        model = XGBClassifier() if kind == "classification" else XGBRegressor()
-        model.load_model(str(artifact))
+        model = _load_model(str(artifact.resolve()), str(kind))
         if kind == "classification":
             raw = model.predict_proba(fingerprint)[0, 1]
         else:

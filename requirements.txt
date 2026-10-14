@@ -1,3 +1,4 @@
 streamlit==1.65.0
 rdkit==2026.9.1
 numpy==2.5.3
+xgboost>=2.0,<4
