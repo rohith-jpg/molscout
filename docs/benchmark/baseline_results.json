@@ -1,0 +1,451 @@
+{
+  "source": "MolScout Morgan-r2-2048 + XGBoost benchmark",
+  "published_at_utc": "2026-10-14T02:03:32.917638+00:00",
+  "protocol": {
+    "created_at_utc": "2026-10-14T02:03:32.917638+00:00",
+    "python": "3.12.14",
+    "packages": {
+      "PyTDC": "1.1.15",
+      "rdkit": "2026.9.1",
+      "numpy": "2.5.3",
+      "scikit-learn": "1.9.1",
+      "xgboost": "3.4.1"
+    },
+    "benchmark_split": "TDC ADMET Benchmark Group scaffold-held-out test; TDC default train/validation split",
+    "invalid_test_rows": "Rows that RDKit could not parse are explicitly excluded from metric calculation and listed per run; scores therefore use n_test_scored, not always the full TDC test set.",
+    "tasks": {
+      "hERG": {
+        "kind": "classification",
+        "metric": "AUROC"
+      },
+      "AMES": {
+        "kind": "classification",
+        "metric": "AUROC"
+      },
+      "BBB_Martins": {
+        "kind": "classification",
+        "metric": "AUROC"
+      },
+      "Solubility_AqSolDB": {
+        "kind": "regression",
+        "metric": "MAE"
+      }
+    },
+    "seeds": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "model": "Morgan-r2-2048 + XGBoost",
+    "fingerprint": {
+      "type": "Morgan",
+      "radius": 2,
+      "bits": 2048
+    },
+    "model_parameters": {
+      "n_estimators": 500,
+      "max_depth": 6,
+      "learning_rate": 0.04,
+      "subsample": 0.85,
+      "colsample_bytree": 0.85,
+      "reg_lambda": 1.0,
+      "n_jobs": 4
+    },
+    "metrics_file": "summary.json",
+    "aggregate_file": "aggregate.json"
+  },
+  "aggregate": [
+    {
+      "dataset": "hERG",
+      "metric": "AUROC",
+      "mean": 0.7352871870397644,
+      "std": 0.013304309383678138,
+      "std_convention": "population standard deviation across supplied seeds",
+      "n_runs": 5,
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "dataset": "AMES",
+      "metric": "AUROC",
+      "mean": 0.8261285711488379,
+      "std": 0.002595198300456301,
+      "std_convention": "population standard deviation across supplied seeds",
+      "n_runs": 5,
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "dataset": "BBB_Martins",
+      "metric": "AUROC",
+      "mean": 0.8708255159474672,
+      "std": 0.016221111462697002,
+      "std_convention": "population standard deviation across supplied seeds",
+      "n_runs": 5,
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    },
+    {
+      "dataset": "Solubility_AqSolDB",
+      "metric": "MAE",
+      "mean": 1.3003553273327217,
+      "std": 0.03501991198326268,
+      "std_convention": "population standard deviation across supplied seeds",
+      "n_runs": 5,
+      "seeds": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ]
+    }
+  ],
+  "per_seed": [
+    {
+      "dataset": "hERG",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.7547864506627393,
+      "seed": 1,
+      "n_train": 457,
+      "n_test": 132,
+      "n_test_scored": 132,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "hERG",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.7394698085419735,
+      "seed": 2,
+      "n_train": 457,
+      "n_test": 132,
+      "n_test_scored": 132,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "hERG",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.7241531664212076,
+      "seed": 3,
+      "n_train": 457,
+      "n_test": 132,
+      "n_test_scored": 132,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "hERG",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.740942562592047,
+      "seed": 4,
+      "n_train": 457,
+      "n_test": 132,
+      "n_test_scored": 132,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "hERG",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.7170839469808542,
+      "seed": 5,
+      "n_train": 457,
+      "n_test": 132,
+      "n_test_scored": 132,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "AMES",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.8251052497601284,
+      "seed": 1,
+      "n_train": 5093,
+      "n_test": 1457,
+      "n_test_scored": 1457,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "AMES",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.8310295874209404,
+      "seed": 2,
+      "n_train": 4553,
+      "n_test": 1457,
+      "n_test_scored": 1457,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "AMES",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.823306702696352,
+      "seed": 3,
+      "n_train": 5093,
+      "n_test": 1457,
+      "n_test_scored": 1457,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "AMES",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.825810178386105,
+      "seed": 4,
+      "n_train": 5093,
+      "n_test": 1457,
+      "n_test_scored": 1457,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "AMES",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.8253911374806635,
+      "seed": 5,
+      "n_train": 5093,
+      "n_test": 1457,
+      "n_test_scored": 1457,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "BBB_Martins",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.8614368355222013,
+      "seed": 1,
+      "n_train": 1421,
+      "n_test": 406,
+      "n_test_scored": 406,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "BBB_Martins",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.863391181988743,
+      "seed": 2,
+      "n_train": 1421,
+      "n_test": 406,
+      "n_test_scored": 406,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "BBB_Martins",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.8953642901813633,
+      "seed": 3,
+      "n_train": 1421,
+      "n_test": 406,
+      "n_test_scored": 406,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "BBB_Martins",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.8505315822388994,
+      "seed": 4,
+      "n_train": 1421,
+      "n_test": 406,
+      "n_test_scored": 406,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "BBB_Martins",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "AUROC",
+      "value": 0.8834036898061288,
+      "seed": 5,
+      "n_train": 1421,
+      "n_test": 406,
+      "n_test_scored": 406,
+      "n_test_excluded_invalid_smiles": 0,
+      "excluded_test_rows": []
+    },
+    {
+      "dataset": "Solubility_AqSolDB",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "MAE",
+      "value": 1.3337780432117445,
+      "seed": 1,
+      "n_train": 6986,
+      "n_test": 1997,
+      "n_test_scored": 1995,
+      "n_test_excluded_invalid_smiles": 2,
+      "excluded_test_rows": [
+        {
+          "row": 1159,
+          "smiles": "CC1=CC=C[NH+2]([O-])[CH-]1",
+          "reason": "RDKit parse failed"
+        },
+        {
+          "row": 1160,
+          "smiles": "O=C(O)C1=C[NH+2]([O-])[CH-]C=C1",
+          "reason": "RDKit parse failed"
+        }
+      ]
+    },
+    {
+      "dataset": "Solubility_AqSolDB",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "MAE",
+      "value": 1.327126996194989,
+      "seed": 2,
+      "n_train": 6986,
+      "n_test": 1997,
+      "n_test_scored": 1995,
+      "n_test_excluded_invalid_smiles": 2,
+      "excluded_test_rows": [
+        {
+          "row": 1159,
+          "smiles": "CC1=CC=C[NH+2]([O-])[CH-]1",
+          "reason": "RDKit parse failed"
+        },
+        {
+          "row": 1160,
+          "smiles": "O=C(O)C1=C[NH+2]([O-])[CH-]C=C1",
+          "reason": "RDKit parse failed"
+        }
+      ]
+    },
+    {
+      "dataset": "Solubility_AqSolDB",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "MAE",
+      "value": 1.3089517490889744,
+      "seed": 3,
+      "n_train": 6986,
+      "n_test": 1997,
+      "n_test_scored": 1995,
+      "n_test_excluded_invalid_smiles": 2,
+      "excluded_test_rows": [
+        {
+          "row": 1159,
+          "smiles": "CC1=CC=C[NH+2]([O-])[CH-]1",
+          "reason": "RDKit parse failed"
+        },
+        {
+          "row": 1160,
+          "smiles": "O=C(O)C1=C[NH+2]([O-])[CH-]C=C1",
+          "reason": "RDKit parse failed"
+        }
+      ]
+    },
+    {
+      "dataset": "Solubility_AqSolDB",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "MAE",
+      "value": 1.2964409426846635,
+      "seed": 4,
+      "n_train": 6986,
+      "n_test": 1997,
+      "n_test_scored": 1995,
+      "n_test_excluded_invalid_smiles": 2,
+      "excluded_test_rows": [
+        {
+          "row": 1159,
+          "smiles": "CC1=CC=C[NH+2]([O-])[CH-]1",
+          "reason": "RDKit parse failed"
+        },
+        {
+          "row": 1160,
+          "smiles": "O=C(O)C1=C[NH+2]([O-])[CH-]C=C1",
+          "reason": "RDKit parse failed"
+        }
+      ]
+    },
+    {
+      "dataset": "Solubility_AqSolDB",
+      "model": "Morgan-r2-2048 + XGBoost",
+      "metric": "MAE",
+      "value": 1.2354789054832376,
+      "seed": 5,
+      "n_train": 5045,
+      "n_test": 1997,
+      "n_test_scored": 1995,
+      "n_test_excluded_invalid_smiles": 2,
+      "excluded_test_rows": [
+        {
+          "row": 1159,
+          "smiles": "CC1=CC=C[NH+2]([O-])[CH-]1",
+          "reason": "RDKit parse failed"
+        },
+        {
+          "row": 1160,
+          "smiles": "O=C(O)C1=C[NH+2]([O-])[CH-]C=C1",
+          "reason": "RDKit parse failed"
+        }
+      ]
+    }
+  ],
+  "leaderboard_reference_checked_utc_date": "2026-10-13",
+  "leaderboard_reference": {
+    "hERG": {
+      "metric": "AUROC",
+      "best_model": "MapLight + GNN",
+      "mean": 0.88,
+      "std": 0.002,
+      "url": "https://tdcommons.ai/benchmark/admet_group/20herg/"
+    },
+    "AMES": {
+      "metric": "AUROC",
+      "best_model": "ZairaChem",
+      "mean": 0.871,
+      "std": 0.002,
+      "url": "https://tdcommons.ai/benchmark/admet_group/21ames/"
+    },
+    "BBB_Martins": {
+      "metric": "AUROC",
+      "best_model": "MiniMol",
+      "mean": 0.924,
+      "std": 0.003,
+      "url": "https://tdcommons.ai/benchmark/admet_group/07bbb/"
+    },
+    "Solubility_AqSolDB": {
+      "metric": "MAE",
+      "best_model": "MiniMol",
+      "mean": 0.741,
+      "std": 0.013,
+      "url": "https://tdcommons.ai/benchmark/admet_group/06aqsol/"
+    }
+  },
+  "comparison_note": "Leaderboard values are published external references, not locally reproduced. AqSolDB MolScout metrics exclude two explicitly listed rows that RDKit 2026.9.1 could not parse; comparisons for that endpoint are not strictly identical in evaluated row population."
+}
+

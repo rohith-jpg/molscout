@@ -132,3 +132,36 @@ if result:
     for molecule in molecules:
         render_molecule(molecule)
     st.caption(result["disclaimer"])
+
+benchmark_path = ROOT / "docs" / "benchmark" / "baseline_results.json"
+if benchmark_path.exists():
+    benchmark = json.loads(benchmark_path.read_text(encoding="utf-8"))
+    st.subheader("Offline model benchmark")
+    st.caption(
+        "These are measured five-seed Morgan + XGBoost results on TDC scaffold splits. "
+        "The live molecule demo above does not use these trained models."
+    )
+    leaderboard = benchmark["leaderboard_reference"]
+    rows = []
+    for result_row in benchmark["aggregate"]:
+        reference = leaderboard[result_row["dataset"]]
+        rows.append(
+            {
+                "Dataset": result_row["dataset"],
+                "Metric": result_row["metric"],
+                "MolScout mean ± SD": (
+                    f"{result_row['mean']:.3f} ± {result_row['std']:.3f}"
+                ),
+                "TDC leaderboard reference": (
+                    f"{reference['best_model']}: "
+                    f"{reference['mean']:.3f} ± {reference['std']:.3f}"
+                ),
+            }
+        )
+    st.dataframe(rows, hide_index=True, width="stretch")
+    st.caption(
+        "TDC values are published reference results, not reproduced runs. "
+        "Two unparseable AqSolDB rows were excluded from MolScout's MAE; see the "
+        "benchmark report in the GitHub repository for details."
+    )
+

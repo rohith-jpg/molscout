@@ -117,7 +117,29 @@ $env:PYTHONPATH = (Join-Path (Get-Location) 'src')
 python scripts/measure_demo_latency.py --repeats 50 --output docs/benchmark/demo_latency.json
 ```
 
-The baseline benchmark code reports per-endpoint AUROC for hERG, AMES, and BBB_Martins, and MAE for Solubility_AqSolDB on TDC's scaffold-held-out test data. It writes results only after the benchmark is actually run; no score is filled in here. A future agent comparison should use a fixed, manually reviewed question set and score the same answers with tools enabled and disabled.
+### Morgan + XGBoost baseline
+
+This is a measured CPU baseline using 2,048-bit Morgan radius-2 fingerprints and XGBoost. It uses the TDC ADMET Benchmark Group scaffold-held-out test data and TDC's default train/validation splitter for five seeds (1–5). Classification uses AUROC; solubility regression uses MAE, where lower is better.
+
+| Dataset | MolScout baseline (mean ± population SD) | Current TDC leaderboard best* |
+|---|---:|---:|
+| hERG (AUROC) | 0.735 ± 0.013 | 0.880 ± 0.002 (MapLight + GNN) |
+| AMES (AUROC) | 0.826 ± 0.003 | 0.871 ± 0.002 (ZairaChem) |
+| BBB_Martins (AUROC) | 0.871 ± 0.016 | 0.924 ± 0.003 (MiniMol) |
+| Solubility_AqSolDB (MAE) | 1.300 ± 0.035 | 0.741 ± 0.013 (MiniMol) |
+
+The MolScout values are the results of this repository's fixed baseline configuration. The leaderboard values are external reference numbers, not reproduced runs. In the TDC 1.1.15 AqSolDB test data, RDKit could not parse two rows; those rows are recorded and excluded, so the MolScout MAE uses 1,995 of 1,997 test rows. The other three endpoints scored every test row. See the [full per-seed results and run manifest](docs/benchmark/baseline_results.json) for package versions, row counts, parameters, and excluded SMILES. TDC's official pages list the benchmark metrics and current leaderboard results: [hERG](https://tdcommons.ai/benchmark/admet_group/20herg/), [AMES](https://tdcommons.ai/benchmark/admet_group/21ames/), [BBB_Martins](https://tdcommons.ai/benchmark/admet_group/07bbb/), and [Solubility_AqSolDB](https://tdcommons.ai/benchmark/admet_group/06aqsol/). Leaderboard values were checked on 2026-10-13 and can change.
+
+To rerun from a Python 3.12 environment, first install MolScout's core dependencies and then the small TDC runtime dependency set. The requirements file avoids pulling PyTDC's unrelated model-serving dependencies:
+
+```powershell
+python -m pip install -e .
+python -m pip install -r requirements-benchmark.txt
+$env:PYTHONPATH = (Join-Path (Get-Location) 'src')
+python -m molscout.benchmark --output-dir outputs/baseline --seeds 1 2 3 4 5
+```
+
+The runner writes metrics, a package/version manifest, and model artifacts under `outputs/baseline/`. Model artifacts and downloaded TDC data are ignored by Git; the compact measured report above is versioned. The live Streamlit demo still shows chemistry descriptors and similarity only; it does not load these trained baseline models. A future agent comparison should use a fixed, manually reviewed question set and score the same answers with tools enabled and disabled.
 
 ## Tech stack
 
@@ -128,7 +150,7 @@ The baseline benchmark code reports per-endpoint AUROC for hERG, AMES, and BBB_M
 | RDKit | SMILES parsing, molecular descriptors, and Morgan fingerprints |
 | NumPy | Fingerprint arrays and measured evaluation utilities |
 | Tanimoto similarity | Transparent structural-neighbor score for the bundled examples |
-| PyTDC + XGBoost | Optional benchmark implementation; not part of the live demo and not trained yet |
+| PyTDC + XGBoost | Five-seed ADMET baseline; not part of the live demo |
 | Chemprop + MAPIE | Optional ensemble/conformal runners; no trained result artifacts yet |
 | MCP | Chemistry tool server available separately; the current UI calls the Python functions directly |
 
@@ -146,7 +168,7 @@ streamlit run streamlit_app.py
 
 Open the local address printed by Streamlit. The saved example works without model weights, network APIs, or secrets.
 
-To run the optional FastAPI/CLI/model code, install its corresponding extras from `pyproject.toml`. See the source modules before running benchmark commands; TDC downloads data, and model training consumes compute.
+To run the optional FastAPI/CLI/model code, install its corresponding extras from `pyproject.toml`. The benchmark command downloads TDC data on its first run and saves trained models locally; benchmark model files are not part of the live demo.
 
 ## Deploy on Streamlit Community Cloud
 
@@ -167,7 +189,6 @@ This gives a student or software engineer a quick, inspectable way to turn a mol
 
 ## Future improvements
 
-- Train and report the four TDC endpoint baselines with saved, reproducible metrics.
 - Export Chemprop ensemble predictions and compare them on the same fixed splits.
 - Add validated model-based explanation and uncertainty results.
 - Expand the reference catalog with a documented, licensed source.
@@ -177,4 +198,5 @@ This gives a student or software engineer a quick, inspectable way to turn a mol
 ## Author
 
 [Rohith Singhu](https://github.com/rohith-jpg) · [GitHub](https://github.com/rohith-jpg) · [LinkedIn](https://www.linkedin.com/in/rohith-singhu-24b8a0249)
+
 

@@ -46,28 +46,44 @@ def _columns(frame: Any) -> tuple[str, str]:
     return smiles_col, target_col
 
 
-def _features_and_labels(frame: Any) -> tuple[np.ndarray, np.ndarray]:
+def _features_labels_and_exclusions(
+    frame: Any,
+) -> tuple[np.ndarray, np.ndarray, list[dict[str, Any]]]:
     smiles_col, target_col = _columns(frame)
     smiles = frame[smiles_col].astype(str).tolist()
     y = frame[target_col].to_numpy(dtype=float)
     canonical_smiles: list[str] = []
+    labels: list[float] = []
+    excluded: list[dict[str, Any]] = []
     from rdkit import Chem
 
     for index, smi in enumerate(smiles):
         mol = Chem.MolFromSmiles(smi)
         if mol is None:
-            raise ValueError(
-                f"Invalid SMILES at row {index}; refusing to silently drop benchmark examples"
-            )
+            excluded.append({"row": index, "smiles": smi, "reason": "RDKit parse failed"})
+            continue
         if not np.isfinite(y[index]):
             raise ValueError(
                 f"Missing/non-finite label at row {index}; "
                 "refusing to silently drop benchmark examples"
             )
         canonical_smiles.append(Chem.MolToSmiles(mol))
+        labels.append(float(y[index]))
     if not canonical_smiles:
-        raise ValueError("No molecule/label rows were found")
-    return fingerprint_matrix(canonical_smiles), y
+        raise ValueError("No valid molecule/label rows were found")
+    return fingerprint_matrix(canonical_smiles), np.asarray(labels), excluded
+
+
+def _features_and_labels(frame: Any) -> tuple[np.ndarray, np.ndarray]:
+    """Create features and fail if any row needs exclusion (useful for train data)."""
+    features, labels, excluded = _features_labels_and_exclusions(frame)
+    if excluded:
+        first = excluded[0]
+        raise ValueError(
+            f"Invalid SMILES at row {first['row']}; "
+            "refusing to silently drop benchmark examples"
+        )
+    return features, labels
 
 
 def _make_model(kind: str, seed: int):
@@ -129,7 +145,7 @@ def run_baselines(output_dir: Path, seeds: list[int]) -> list[dict[str, Any]]:
     for task_name, task in TASKS.items():
         benchmark = group.get(task_name)
         test = benchmark["test"]
-        test_x, test_y = _features_and_labels(test)
+        test_x, test_y, excluded_test_rows = _features_labels_and_exclusions(test)
         for seed in seeds:
             train, valid = group.get_train_valid_split(
                 benchmark=task_name, split_type="default", seed=seed
@@ -157,7 +173,10 @@ def run_baselines(output_dir: Path, seeds: list[int]) -> list[dict[str, Any]]:
                 "value": metric_value,
                 "seed": seed,
                 "n_train": int(len(train_y)),
-                "n_test": int(len(test_y)),
+                "n_test": int(len(test)),
+                "n_test_scored": int(len(test_y)),
+                "n_test_excluded_invalid_smiles": len(excluded_test_rows),
+                "excluded_test_rows": excluded_test_rows,
             }
             rows.append(row)
             run_dir = output_dir / task_name / f"seed-{seed}"
@@ -178,6 +197,10 @@ def run_baselines(output_dir: Path, seeds: list[int]) -> list[dict[str, Any]]:
         },
         "benchmark_split": (
             "TDC ADMET Benchmark Group scaffold-held-out test; TDC default train/validation split"
+        ),
+        "invalid_test_rows": (
+            "Rows that RDKit could not parse are explicitly excluded from metric calculation "
+            "and listed per run; scores therefore use n_test_scored, not always the full TDC test set."
         ),
         "tasks": TASKS,
         "seeds": seeds,
@@ -203,3 +226,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
