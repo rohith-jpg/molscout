@@ -107,7 +107,7 @@ Only the local deterministic analysis path has been timed so far. That timing is
 | Median analysis time | 0.00374 s / 3-molecule batch | 50 timed local runs after 3 warmups; Windows 11, Python 3.12.14 |
 | P95 analysis time | 0.00525 s / 3-molecule batch | Same run; in-process RDKit analysis only |
 | Throughput at median | 801.4 molecules/s | Three fixed sample SMILES divided by measured median batch time |
-| ADMET AUROC / MAE | Not measured | No trained endpoint model artifacts are included |
+| Morgan + XGBoost ADMET baseline | Measured below | Five seeds on four TDC endpoints; full values and exclusions are documented below |
 | Agent factual accuracy | Not measured | No LLM planner or agent evaluation set is implemented yet |
 
 The captured timing environment and sample inputs are recorded in [`docs/benchmark/demo_latency.json`](docs/benchmark/demo_latency.json). Re-measure on your deployment before comparing it with these local numbers:
@@ -128,7 +128,7 @@ This is a measured CPU baseline using 2,048-bit Morgan radius-2 fingerprints and
 | BBB_Martins (AUROC) | 0.871 ± 0.016 | 0.924 ± 0.003 (MiniMol) |
 | Solubility_AqSolDB (MAE) | 1.300 ± 0.035 | 0.741 ± 0.013 (MiniMol) |
 
-The MolScout values are the results of this repository's fixed baseline configuration. The leaderboard values are external reference numbers, not reproduced runs. In the TDC 1.1.15 AqSolDB test data, RDKit could not parse two rows; those rows are recorded and excluded, so the MolScout MAE uses 1,995 of 1,997 test rows. The other three endpoints scored every test row. See the [full per-seed results and run manifest](docs/benchmark/baseline_results.json) for package versions, row counts, parameters, and excluded SMILES. TDC's official pages list the benchmark metrics and current leaderboard results: [hERG](https://tdcommons.ai/benchmark/admet_group/20herg/), [AMES](https://tdcommons.ai/benchmark/admet_group/21ames/), [BBB_Martins](https://tdcommons.ai/benchmark/admet_group/07bbb/), and [Solubility_AqSolDB](https://tdcommons.ai/benchmark/admet_group/06aqsol/). Leaderboard values were checked on 2026-10-13 and can change.
+The MolScout values are the results of this repository's fixed baseline configuration. The leaderboard values are external reference numbers, not reproduced runs. In the TDC 1.1.15 AqSolDB test data, RDKit could not parse two rows; those rows are recorded and excluded, so the MolScout MAE uses 1,995 of 1,997 test rows. The other three endpoints scored every test row. See the [full per-seed results and run manifest](docs/benchmark/baseline_results.json) for package versions, row counts, parameters, and excluded SMILES. TDC's official pages list the benchmark metrics and current leaderboard results: [hERG](https://tdcommons.ai/benchmark/admet_group/20herg/), [AMES](https://tdcommons.ai/benchmark/admet_group/21ames/), [BBB_Martins](https://tdcommons.ai/benchmark/admet_group/07bbb/), and [Solubility_AqSolDB](https://tdcommons.ai/benchmark/admet_group/06aqsol/). Leaderboard values were checked on 2026-10-14 and can change.
 
 To rerun from a Python 3.12 environment, first install MolScout's core dependencies and then the small TDC runtime dependency set. The requirements file avoids pulling PyTDC's unrelated model-serving dependencies:
 

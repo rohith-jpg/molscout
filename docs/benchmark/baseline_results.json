@@ -415,7 +415,7 @@
       ]
     }
   ],
-  "leaderboard_reference_checked_utc_date": "2026-10-13",
+  "leaderboard_reference_checked_utc_date": "2026-10-14",
   "leaderboard_reference": {
     "hERG": {
       "metric": "AUROC",
