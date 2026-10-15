@@ -239,3 +239,47 @@ if benchmark_path.exists():
         "benchmark report in the GitHub repository for details."
     )
 
+conformal_path = ROOT / "docs" / "benchmark" / "conformal_results.json"
+if conformal_path.exists():
+    conformal = json.loads(conformal_path.read_text(encoding="utf-8"))
+    st.subheader("Offline conformal interval evaluation")
+    st.caption(
+        "Five 90% split-conformal runs on TDC AqSolDB. This reports measured coverage "
+        "on the scaffold-held-out test set; the live molecule scores do not yet include "
+        "calibrated intervals."
+    )
+    aggregate = conformal["aggregate"]
+    st.dataframe(
+        [
+            {
+                "Metric": "Test MAE (log10 mol/L)",
+                "Mean ± population SD": (
+                    f"{aggregate['test_mae']['mean']:.3f} ± "
+                    f"{aggregate['test_mae']['population_sd']:.3f}"
+                ),
+            },
+            {
+                "Metric": "Empirical test coverage (nominal 90%)",
+                "Mean ± population SD": (
+                    f"{100 * aggregate['test_empirical_coverage']['mean']:.1f}% ± "
+                    f"{100 * aggregate['test_empirical_coverage']['population_sd']:.1f}%"
+                ),
+            },
+            {
+                "Metric": "Mean interval width (log10 mol/L)",
+                "Mean ± population SD": (
+                    f"{aggregate['test_mean_interval_width']['mean']:.3f} ± "
+                    f"{aggregate['test_mean_interval_width']['population_sd']:.3f}"
+                ),
+            },
+        ],
+        hide_index=True,
+        width="stretch",
+    )
+    st.caption(
+        "Two invalid AqSolDB test rows were excluded per seed. Coverage is empirical; "
+        "scaffold shift can break the exchangeability assumption. See "
+        "docs/benchmark/conformal_results.json for seed-level details."
+    )
+
+
