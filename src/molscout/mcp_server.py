@@ -17,6 +17,8 @@ try:
 except ImportError as exc:  # pragma: no cover - exercised by missing-extra installs
     raise RuntimeError("Install the agent extra: pip install -e '.[agent]'") from exc
 
+from molscout.agent_workflow import run_agent_workflow
+
 mcp = FastMCP("MolScout chemistry tools")
 
 
@@ -56,6 +58,18 @@ def explain_prediction(smiles: str, endpoint: str) -> dict[str, object]:
     """Map toxicity model fingerprint contributions back to molecule atoms."""
     model_dir = Path(os.environ.get("MOLSCOUT_MODEL_DIR", "outputs/baseline"))
     return _explain_prediction(smiles, endpoint, model_dir=model_dir)
+
+
+@mcp.tool()
+def triage_with_agent(
+    smiles_list: list[str], endpoints: list[str] | None = None
+) -> dict[str, object]:
+    """Run the LangGraph parallel workflow and return ranked, cited molecule reports."""
+    return run_agent_workflow(
+        smiles_list,
+        endpoints=endpoints,
+        model_dir=Path(os.environ.get("MOLSCOUT_MODEL_DIR", "outputs/baseline")),
+    )
 
 
 if __name__ == "__main__":
