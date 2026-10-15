@@ -282,4 +282,26 @@ if conformal_path.exists():
         "docs/benchmark/conformal_results.json for seed-level details."
     )
 
+chemprop_path = ROOT / "docs" / "benchmark" / "chemprop_hERG_pilot.json"
+if chemprop_path.exists():
+    chemprop_pilot = json.loads(chemprop_path.read_text(encoding="utf-8"))
+    st.subheader("Offline Chemprop hERG pilot")
+    st.caption(
+        "One seed, five CPU-trained models, and 132 official scaffold-held-out test "
+        "molecules. This is a pilot result, not evidence of general model superiority."
+    )
+    st.dataframe(
+        [
+            {"Model": "Chemprop MPNN ensemble (5 models)", "AUROC": f"{chemprop_pilot['chemprop_auroc']:.3f}"},
+            {"Model": "Morgan + XGBoost (same seed and test rows)", "AUROC": f"{chemprop_pilot['same_seed_morgan_xgboost_auroc']:.3f}"},
+        ],
+        hide_index=True,
+        width="stretch",
+    )
+    st.caption(
+        f"Seed {chemprop_pilot['seed']}; n={chemprop_pilot['n_test']} test rows; "
+        "see docs/benchmark/chemprop_hERG_pilot.json for exact values and versions."
+    )
+
+
 
