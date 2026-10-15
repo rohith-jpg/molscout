@@ -138,7 +138,7 @@ To rerun from a Python 3.12 environment, first install MolScout's core dependenc
 
 ```powershell
 python -m pip install -e .
-python -m pip install -r requirements-benchmark.txt
+python -m pip install --no-deps -r requirements-benchmark.txt
 $env:PYTHONPATH = (Join-Path (Get-Location) 'src')
 python -m molscout.benchmark --output-dir outputs/baseline --seeds 1 2 3 4 5
 ```
@@ -164,7 +164,10 @@ Five seeds were measured with MAPIE 1.5.0 and TDC 1.1.15. Mean test MAE was **1.
 The Chemprop runner now exports test-set predictions after training and reports the same task metric used by the XGBoost baseline (AUROC for hERG, AMES, and BBB_Martins; MAE for AqSolDB). It feeds TDC's train, validation, and scaffold test files directly to Chemprop, averages its internal model ensemble, and records invalid test rows. Chemprop is optional and is not installed in the Streamlit app. Start with one endpoint and one seed on a GPU runtime before expanding the run:
 
 ```powershell
-python -m pip install -e ".[benchmark,gnn]"
+python -m pip install -e .
+python -m pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu "torch>=2.2,<3"
+python -m pip install "chemprop>=2.2,<3" "xgboost>=2,<4"
+python -m pip install --no-deps -r requirements-benchmark.txt
 $env:PYTHONPATH = (Join-Path (Get-Location) 'src')
 python -m molscout.chemprop_runner --output-dir outputs/chemprop --tasks hERG --seeds 1 --ensemble-size 5
 ```
@@ -230,6 +233,7 @@ This gives a student or software engineer a quick, inspectable way to turn a mol
 ## Author
 
 [Rohith Singhu](https://github.com/rohith-jpg) · [GitHub](https://github.com/rohith-jpg) · [LinkedIn](https://www.linkedin.com/in/rohith-singhu-24b8a0249)
+
 
 
 
