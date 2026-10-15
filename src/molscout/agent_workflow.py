@@ -41,11 +41,6 @@ def _analyze_one(
         }
         for entry in report["evidence"]
     ]
-    id_map = {
-        entry["id"].split("-", 1)[0] + "-" + entry["id"].split("-", 1)[1]:
-        entry["id"]
-        for entry in report["evidence"]
-    }
     for claim in report["claims"]:
         claim["evidence_ids"] = [
             f"m{index + 1}-" + evidence_id.split("-", 1)[1]
@@ -135,6 +130,11 @@ def _execute(state: AgentState) -> dict[str, Any]:
 
 def _rank_and_cite(state: AgentState) -> dict[str, Any]:
     reports = state["molecules"]
+    for report in reports:
+        report["claims"] = [
+            claim for claim in report["claims"]
+            if not claim["text"].startswith("Ranked #")
+        ]
     ranked = sorted(
         (report for report in reports if report["valid"]),
         key=lambda report: (
