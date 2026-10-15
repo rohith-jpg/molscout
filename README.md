@@ -79,7 +79,8 @@ flowchart LR
     EX --> CORE
     CORE --> OUT[Ranked report with evidence IDs]
     OUT --> UI
-    MCP[Separate MCP server + LangGraph tool workflow] -. tool calls .-> CORE\n    FUT[Future: LLM planner and external APIs] -. roadmap .-> CORE
+    MCP[Separate MCP server + LangGraph tool workflow] -. tool calls .-> CORE
+    FUT[Future: LLM planner and external APIs] -. roadmap .-> CORE
 ```
 
 The current demo has no database or external API dependency. It loads the 20 bundled baseline models for the four measured endpoints. Chemprop, conformal, and MCP code in the repository is not called by this Streamlit demo. The MCP server now also exposes a LangGraph tool workflow: it creates a deterministic plan, runs independent molecule analyses in a bounded thread pool, ranks by the stated heuristic, and returns claims linked to tool evidence. It does not call an LLM; a learned planner and agent-answer evaluation remain future work.
