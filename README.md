@@ -147,7 +147,7 @@ The runner writes metrics, a package/version manifest, and model artifacts under
 
 ### Conformal prediction
 
-The optional AqSolDB split-conformal runner trains on TDC's train partition, uses validation as the calibration partition, and measures 90% interval coverage on the fixed scaffold test set. It writes per-molecule intervals, test MAE, empirical coverage, mean interval width, and a list of invalid test SMILES excluded from scoring. No conformal result is published until this command is run successfully:
+The AqSolDB split-conformal runner trains on TDC's train partition, uses validation as the calibration partition, and measures 90% interval coverage on the fixed scaffold test set. It writes per-molecule intervals, test MAE, empirical coverage, mean interval width, and a list of invalid test SMILES excluded from scoring. The five-seed run completed; its measured aggregate and per-seed results are reported below and in [`docs/benchmark/conformal_results.json`](docs/benchmark/conformal_results.json):
 
 ```powershell
 python -m pip install -e ".[uncertainty]"
@@ -156,6 +156,8 @@ python -m molscout.conformal --output-dir outputs/conformal --seeds 1 2 3 4 5 --
 ```
 
 The reported test coverage is an observed result, not a guarantee: scaffold-held-out molecules can differ from the train and calibration distributions, which weakens the exchangeability assumption behind split conformal prediction.
+
+Five seeds were measured with MAPIE 1.5.0 and TDC 1.1.15. Mean test MAE was **1.300 ± 0.035 log10(mol/L)**, empirical coverage was **91.6% ± 3.2%** for nominal 90% intervals, and mean interval width was **5.673 ± 0.649 log10(mol/L)** (mean ± population SD). Each seed scored 1,995 of 1,997 scaffold test rows; two invalid SMILES were explicitly excluded. Coverage ranged from 88.2% to 96.7% across seeds, which shows why the observed result is not a per-chemistry guarantee. Per-seed details are in [`docs/benchmark/conformal_results.json`](docs/benchmark/conformal_results.json). The live app currently displays this validation summary; it does not yet return calibrated AqSolDB intervals for new inputs.
 
 ### Chemprop graph neural network comparison
 
@@ -179,7 +181,7 @@ The runner writes each seed's test scores, prediction CSV, excluded-row list, an
 | NumPy + scikit-learn | Fingerprint arrays and XGBoost's sklearn model API |
 | Tanimoto similarity | Transparent structural-neighbor score for the bundled examples |
 | PyTDC + XGBoost | Five-seed ADMET baseline; saved XGBoost models power the live demo |
-| Chemprop + MAPIE | Optional GNN ensemble and split-conformal evaluation runners; no measured results published yet |
+| Chemprop + MAPIE | Chemprop GNN evaluation runner; MAPIE split-conformal intervals measured on AqSolDB |
 | MCP | Chemistry tool server available separately; the current UI calls the Python functions directly |
 
 ## Run locally
@@ -226,5 +228,6 @@ This gives a student or software engineer a quick, inspectable way to turn a mol
 ## Author
 
 [Rohith Singhu](https://github.com/rohith-jpg) · [GitHub](https://github.com/rohith-jpg) · [LinkedIn](https://www.linkedin.com/in/rohith-singhu-24b8a0249)
+
 
 
