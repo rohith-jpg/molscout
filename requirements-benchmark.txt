@@ -1,10 +1,11 @@
 # Install MolScout's core dependencies first: python -m pip install -e .
-# PyTDC imports these runtime packages for ADMET benchmark loading. --no-deps
-# avoids installing unrelated model-serving stacks pulled in by PyTDC metadata.
---no-deps
+# PyTDC imports these runtime packages for ADMET benchmark loading.
+# Install with: python -m pip install --no-deps -r requirements-benchmark.txt
+# This avoids installing unrelated model-serving stacks pulled in by PyTDC metadata.
 PyTDC==1.1.15
 tqdm>=4.65,<5
 fuzzywuzzy==0.18.0
 huggingface_hub>=0.20.3,<1
 setuptools<81
+
 
