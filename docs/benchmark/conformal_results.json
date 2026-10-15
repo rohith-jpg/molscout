@@ -1,0 +1,114 @@
+{
+  "dataset": "Solubility_AqSolDB",
+  "model": "Morgan-r2-2048 + XGBoost + MAPIE split conformal",
+  "confidence_level": 0.9,
+  "calibration_split": "TDC default validation partition for each seed",
+  "test_split": "TDC fixed scaffold-held-out test set",
+  "package_versions": {
+    "PyTDC": "1.1.15",
+    "MAPIE": "1.5.0",
+    "XGBoost": "3.4.1",
+    "scikit-learn": "1.9.1"
+  },
+  "aggregate": {
+    "test_mae": {
+      "mean": 1.3003553273327217,
+      "population_sd": 0.03501991198326268
+    },
+    "test_empirical_coverage": {
+      "mean": 0.9163909774436091,
+      "population_sd": 0.032069860489004634
+    },
+    "test_mean_interval_width": {
+      "mean": 5.6734387462749885,
+      "population_sd": 0.6487203240759617
+    }
+  },
+  "coverage_scope": "empirical coverage on scaffold-held-out test rows; not a guarantee under scaffold distribution shift",
+  "n_test_raw_per_seed": 1997,
+  "n_test_scored_per_seed": 1995,
+  "invalid_test_rows_excluded_per_seed": 2,
+  "seeds": [
+    {
+      "dataset": "Solubility_AqSolDB",
+      "model": "Morgan-r2-2048 + XGBoost + MAPIE split conformal",
+      "seed": 1,
+      "confidence_level": 0.9,
+      "n_train": 6986,
+      "n_calibration": 999,
+      "n_test_raw": 1997,
+      "n_test": 1995,
+      "n_test_excluded": 2,
+      "test_mae": 1.3337780432117445,
+      "test_empirical_coverage": 0.887719298245614,
+      "test_mean_interval_width": 5.164134060091258,
+      "coverage_scope": "empirical scaffold-held-out test coverage",
+      "coverage_caveat": "Split-conformal finite-sample coverage relies on exchangeability; scaffold shift can violate that assumption."
+    },
+    {
+      "dataset": "Solubility_AqSolDB",
+      "model": "Morgan-r2-2048 + XGBoost + MAPIE split conformal",
+      "seed": 2,
+      "confidence_level": 0.9,
+      "n_train": 6986,
+      "n_calibration": 999,
+      "n_test_raw": 1997,
+      "n_test": 1995,
+      "n_test_excluded": 2,
+      "test_mae": 1.327126996194989,
+      "test_empirical_coverage": 0.9373433583959899,
+      "test_mean_interval_width": 6.075620956420897,
+      "coverage_scope": "empirical scaffold-held-out test coverage",
+      "coverage_caveat": "Split-conformal finite-sample coverage relies on exchangeability; scaffold shift can violate that assumption."
+    },
+    {
+      "dataset": "Solubility_AqSolDB",
+      "model": "Morgan-r2-2048 + XGBoost + MAPIE split conformal",
+      "seed": 3,
+      "confidence_level": 0.9,
+      "n_train": 6986,
+      "n_calibration": 999,
+      "n_test_raw": 1997,
+      "n_test": 1995,
+      "n_test_excluded": 2,
+      "test_mae": 1.3089517490889744,
+      "test_empirical_coverage": 0.8817042606516291,
+      "test_mean_interval_width": 5.063058145141601,
+      "coverage_scope": "empirical scaffold-held-out test coverage",
+      "coverage_caveat": "Split-conformal finite-sample coverage relies on exchangeability; scaffold shift can violate that assumption."
+    },
+    {
+      "dataset": "Solubility_AqSolDB",
+      "model": "Morgan-r2-2048 + XGBoost + MAPIE split conformal",
+      "seed": 4,
+      "confidence_level": 0.9,
+      "n_train": 6986,
+      "n_calibration": 999,
+      "n_test_raw": 1997,
+      "n_test": 1995,
+      "n_test_excluded": 2,
+      "test_mae": 1.2964409426846635,
+      "test_empirical_coverage": 0.9077694235588972,
+      "test_mean_interval_width": 5.306559976196288,
+      "coverage_scope": "empirical scaffold-held-out test coverage",
+      "coverage_caveat": "Split-conformal finite-sample coverage relies on exchangeability; scaffold shift can violate that assumption."
+    },
+    {
+      "dataset": "Solubility_AqSolDB",
+      "model": "Morgan-r2-2048 + XGBoost + MAPIE split conformal",
+      "seed": 5,
+      "confidence_level": 0.9,
+      "n_train": 5045,
+      "n_calibration": 2940,
+      "n_test_raw": 1997,
+      "n_test": 1995,
+      "n_test_excluded": 2,
+      "test_mae": 1.2354789054832376,
+      "test_empirical_coverage": 0.9674185463659147,
+      "test_mean_interval_width": 6.757820593524901,
+      "coverage_scope": "empirical scaffold-held-out test coverage",
+      "coverage_caveat": "Split-conformal finite-sample coverage relies on exchangeability; scaffold shift can violate that assumption."
+    }
+  ]
+}
+
