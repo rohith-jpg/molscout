@@ -79,10 +79,10 @@ flowchart LR
     EX --> CORE
     CORE --> OUT[Ranked report with evidence IDs]
     OUT --> UI
-    FUT[Future: MCP tools, agent, external APIs] -. separate roadmap .-> CORE
+    MCP[Separate MCP server + LangGraph tool workflow] -. tool calls .-> CORE\n    FUT[Future: LLM planner and external APIs] -. roadmap .-> CORE
 ```
 
-The current demo has no database or external API dependency. It loads the 20 bundled baseline models for the four measured endpoints. Chemprop, conformal, and MCP code in the repository is not called by this Streamlit demo.
+The current demo has no database or external API dependency. It loads the 20 bundled baseline models for the four measured endpoints. Chemprop, conformal, and MCP code in the repository is not called by this Streamlit demo. The MCP server now also exposes a LangGraph tool workflow: it creates a deterministic plan, runs independent molecule analyses in a bounded thread pool, ranks by the stated heuristic, and returns claims linked to tool evidence. It does not call an LLM; a learned planner and agent-answer evaluation remain future work.
 
 ## Screenshots
 
@@ -191,6 +191,18 @@ The runner writes each seed's test scores, prediction CSV, excluded-row list, an
 
 **Measured pilot:** Chemprop 2.3.1 completed a five-model hERG ensemble on CPU for seed 1 using TDC's official scaffold-held-out test rows. AUROC was **0.805** versus **0.755** for MolScout's Morgan + XGBoost baseline on the same seed and 132 test molecules (no invalid test rows excluded). This is one seed on a small test set, so it is a pilot comparison, not evidence that Chemprop is generally better. See [`docs/benchmark/chemprop_hERG_pilot.json`](docs/benchmark/chemprop_hERG_pilot.json) for exact values and versions. The run exposed a Chemprop 2.3 CLI output-column difference; the evaluator now accepts its target-named ensemble output.
 
+## LangGraph and MCP workflow
+
+Install the optional agent dependencies, point the server at the checked-in baseline models, and start the stdio MCP server:
+
+```powershell
+python -m pip install -e ".[agent]"
+$env:MOLSCOUT_MODEL_DIR = (Join-Path (Get-Location) 'models/baseline')
+python -m molscout.mcp_server
+```
+
+The `triage_with_agent` MCP tool plans the requested endpoints, runs independent molecule workflows concurrently (up to four by default), ranks valid inputs by the documented rule-of-five heuristic, and returns evidence IDs for every result claim. This is a LangGraph orchestration workflow; it has no LLM planner, and the rank is not a drug-candidate score. The separate MCP server is not required by the public Streamlit demo.
+
 ## Tech stack
 
 | Tool | Used for |
@@ -203,7 +215,7 @@ The runner writes each seed's test scores, prediction CSV, excluded-row list, an
 | Tanimoto similarity | Transparent structural-neighbor score for the bundled examples |
 | PyTDC + XGBoost | Five-seed ADMET baseline; saved XGBoost models power the live demo |
 | Chemprop + MAPIE | Five-model Chemprop hERG pilot measured on one official split; MAPIE split-conformal intervals measured on AqSolDB |
-| MCP | Chemistry tool server available separately; the current UI calls the Python functions directly |
+| LangGraph + MCP | Optional stdio tool server; deterministic parallel tool workflow returns evidence-linked reports, while the UI calls Python functions directly |
 
 ## Run locally
 
@@ -243,7 +255,7 @@ This gives a student or software engineer a quick, inspectable way to turn a mol
 - Export Chemprop ensemble predictions and compare them on the same fixed splits.
 - Compare atom attributions with a second explanation method and test their stability across held-out scaffolds.
 - Expand the reference catalog with a documented, licensed source.
-- Add MCP-backed tool orchestration only when each tool's output is validated and cited.
+- Add an LLM planner after building a reviewed tool-call evaluation set; the current LangGraph workflow uses a deterministic plan.
 - Add a manually reviewed evaluation set for agent answers and report both accuracy and failure cases.
 
 ## Author
