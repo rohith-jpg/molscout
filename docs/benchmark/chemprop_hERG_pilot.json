@@ -1,0 +1,26 @@
+{
+  "dataset": "hERG",
+  "model": "Chemprop MPNN ensemble",
+  "task_metric": "AUROC",
+  "split": "TDC ADMET Benchmark Group official scaffold-held-out test; default train/validation split",
+  "seed": 1,
+  "ensemble_size": 5,
+  "n_train": 457,
+  "n_validation": 66,
+  "n_test": 132,
+  "invalid_test_rows_excluded": 0,
+  "chemprop_auroc": 0.804860088365243,
+  "same_seed_morgan_xgboost_auroc": 0.7547864506627393,
+  "auroc_difference": 0.0500736377025037,
+  "comparison_scope": "One seed and one small held-out test set; descriptive pilot, not evidence of general model superiority.",
+  "software_versions": {
+    "Python": "3.12.14",
+    "Chemprop": "2.3.1",
+    "PyTorch": "2.14.1+cpu",
+    "PyTDC": "1.1.15",
+    "RDKit": "2026.3.6"
+  },
+  "compute": "CPU; no GPU available",
+  "raw_training_artifacts": "outputs/chemprop/hERG/seed-1/ (generated locally; not committed)"
+}
+
