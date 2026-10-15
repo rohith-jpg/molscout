@@ -14,7 +14,8 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT / "src"))
 
 from molscout.analysis import analyze_batch  # noqa: E402
-from molscout.prediction import ENDPOINTS, predict_admet  # noqa: E402
+from molscout.prediction import ENDPOINTS, explain_prediction, predict_admet  # noqa: E402
+from molscout.visualization import molecule_attribution_image  # noqa: E402
 
 st.set_page_config(page_title="MolScout | Molecule triage", page_icon="🧪", layout="wide")
 st.title("🧪 MolScout")
@@ -110,6 +111,7 @@ if st.button("Analyze molecules", type="primary", width="stretch"):
                 molecule["admet_predictions"] = predictions
             st.session_state["molscout_result"] = result
             st.session_state["molscout_elapsed"] = time.perf_counter() - started
+            st.session_state["molscout_explanations"] = {}
         except (ValueError, RuntimeError) as exc:
             st.error(str(exc))
 
@@ -161,6 +163,94 @@ def render_molecule(report: dict[str, Any]) -> None:
                     "Seed spread is not a probability interval or calibrated confidence. "
                     "Scores do not determine the heuristic rank."
                 )
+                for endpoint in ("hERG", "AMES"):
+                    if not any(item["endpoint"] == endpoint for item in predictions):
+                        continue
+                    evidence_id = f"m{report['input_index'] + 1}-explain-{endpoint}"
+                    explanation_key = f"{report['input_index']}:{endpoint}"
+                    if st.button(
+                        f"Explain {endpoint} score with atom attribution",
+                        key=f"explain-{explanation_key}",
+                    ):
+                        try:
+                            explanation = explain_prediction(
+                                report["canonical_smiles"], endpoint
+                            )
+                            report["evidence"] = [
+                                item for item in report["evidence"]
+                                if item["id"] != evidence_id
+                            ]
+                            report["evidence"].append(
+                                {
+                                    "id": evidence_id,
+                                    "tool": "explain_prediction",
+                                    "result": explanation,
+                                }
+                            )
+                            report["claims"] = [
+                                claim for claim in report["claims"]
+                                if evidence_id not in claim["evidence_ids"]
+                            ]
+                            top_atoms = explanation["most_positive_atoms"][:3]
+                            atom_summary = (
+                                ", ".join(
+                                    f"{atom['element']} at atom {atom['atom_index']}"
+                                    for atom in top_atoms
+                                )
+                                if top_atoms
+                                else "no positive mapped atom contribution"
+                            )
+                            report["claims"].append(
+                                {
+                                    "text": (
+                                        f"The strongest positive {endpoint} fingerprint "
+                                        f"attribution maps to {atom_summary}; this is an "
+                                        "association learned by the model, not a causal "
+                                        "toxicity mechanism."
+                                    ),
+                                    "evidence_ids": [evidence_id],
+                                }
+                            )
+                            st.session_state.setdefault("molscout_explanations", {})[
+                                explanation_key
+                            ] = explanation
+                        except (ValueError, FileNotFoundError) as exc:
+                            st.error(str(exc))
+
+                    explanation = st.session_state.get("molscout_explanations", {}).get(
+                        explanation_key
+                    )
+                    if explanation:
+                        st.image(
+                            molecule_attribution_image(
+                                explanation["canonical_smiles"],
+                                explanation["atom_attributions"],
+                                size=(560, 360),
+                                legend=f"{endpoint} model atom attribution",
+                            ),
+                            caption=(
+                                f"{endpoint} XGBoost contribution by atom: red pushes "
+                                "toward dataset class 1; blue pushes away."
+                            ),
+                        )
+                        st.dataframe(
+                            [
+                                {
+                                    "Atom": atom["atom_index"],
+                                    "Element": atom["element"],
+                                    "Mean raw-margin contribution": f"{atom['attribution']:+.4f}",
+                                }
+                                for atom in explanation["atom_attributions"][:10]
+                            ],
+                            hide_index=True,
+                            width="stretch",
+                        )
+                        st.caption(explanation["warning"])
+                        st.caption(
+                            "The picture projects hashed fingerprint-feature effects onto "
+                            f"atom environments. Unmapped nonzero feature contribution: "
+                            f"{explanation['unmapped_feature_contribution']:+.4f} raw-margin units."
+                        )
             similarity_result = next(
                 item["result"]
                 for item in report["evidence"]
@@ -302,6 +392,7 @@ if chemprop_path.exists():
         f"Seed {chemprop_pilot['seed']}; n={chemprop_pilot['n_test']} test rows; "
         "see docs/benchmark/chemprop_hERG_pilot.json for exact values and versions."
     )
+
 
 
 

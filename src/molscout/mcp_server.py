@@ -9,6 +9,7 @@ from molscout.analysis import analyze_batch
 from molscout.chemistry import compute_properties as _compute_properties
 from molscout.chemistry import validate_smiles as _validate_smiles
 from molscout.prediction import predict_admet as _predict_admet
+from molscout.prediction import explain_prediction as _explain_prediction
 from molscout.similarity import similar_known_drugs as _similar_known_drugs
 
 try:
@@ -50,5 +51,13 @@ def predict_admet(smiles: str, endpoint: str) -> dict[str, object]:
     return _predict_admet(smiles, endpoint, model_dir=model_dir)
 
 
+@mcp.tool()
+def explain_prediction(smiles: str, endpoint: str) -> dict[str, object]:
+    """Map toxicity model fingerprint contributions back to molecule atoms."""
+    model_dir = Path(os.environ.get("MOLSCOUT_MODEL_DIR", "outputs/baseline"))
+    return _explain_prediction(smiles, endpoint, model_dir=model_dir)
+
+
 if __name__ == "__main__":
     mcp.run()
+

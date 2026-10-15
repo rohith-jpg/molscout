@@ -26,7 +26,8 @@ Students and early-stage computational chemistry teams often need a quick way to
 3. RDKit calculates molecular weight, cLogP, hydrogen-bond counts, TPSA, rotatable bonds, and Morgan fingerprints.
 4. Five trained Morgan + XGBoost seeds score each molecule on hERG, AMES, BBB_Martins, and Solubility_AqSolDB.
 5. MolScout counts Lipinski threshold violations and ranks valid inputs with that explicit heuristic; ADMET scores are shown separately and do not affect rank.
-6. The interface links each descriptor, similarity statement, and ADMET score to its supporting tool result.
+6. On request, XGBoost tree contributions for hERG or AMES are projected from Morgan fingerprint bits onto the matching atom environments and drawn on the molecule.
+7. The interface links each descriptor, similarity statement, score, and requested explanation to its supporting tool result.
 
 The public demo runs bundled baseline models locally in the app process and uses no LLM, network lookup, or paid API. The bundled reference list is small and is not a ChEMBL or comprehensive approved-drug index.
 
@@ -43,10 +44,12 @@ flowchart TD
     P --> R[Count rule-of-five threshold violations]
     P --> S[Compare Morgan fingerprints to 5 demo compounds]
     P --> M[Score 4 ADMET endpoints with 5 XGBoost seeds each]
+    M --> X[Optional hERG/AMES atom attribution]
+    X --> O[Show report, highlights, and evidence IDs]
     R --> T[Rank valid inputs by violation count]
     S --> T
-    M --> O[Show baseline scores and seed spread]
-    I --> O[Show report and evidence IDs]
+    M --> O
+    I --> O
     T --> O
     O --> U[User inspects descriptor values and raw tool results]
 ```
@@ -72,6 +75,8 @@ flowchart LR
     CORE --> FP
     FP --> REF
     CORE --> MODELS
+    MODELS --> EX[Mean XGBoost contributions projected onto Morgan atom environments]
+    EX --> CORE
     CORE --> OUT[Ranked report with evidence IDs]
     OUT --> UI
     FUT[Future: MCP tools, agent, external APIs] -. separate roadmap .-> CORE
@@ -87,7 +92,7 @@ Screenshots should come from the running app and show its actual output. Save th
 |---|---|---|
 | `home.png` | Landing page before analysis | MolScout explains its scope and accepts one SMILES per line. |
 | `input.png` | Text area with example molecules entered | The example batch contains three valid structures and one intentionally invalid input. |
-| `results.png` | Completed analysis with the first molecule expanded and raw tool results open | Descriptor values, four ADMET baseline outputs, heuristic rank, nearest demo-catalog entries, claims, evidence IDs, and raw results are visible. |
+| `results.png` | Completed analysis with the first molecule expanded; click the hERG explanation button | Descriptor values, four ADMET baseline outputs, heuristic rank, optional colored atom attribution, claims, evidence IDs, and raw results are visible. |
 | `invalid-input.png` | Expand the invalid molecule result | Invalid input is reported with validation evidence instead of being silently dropped. |
 | `batch-summary.png` | Capture the batch summary at the top of completed results | Counts of total, parsed, and invalid inputs are visible. |
 
@@ -133,6 +138,16 @@ This is a measured CPU baseline using 2,048-bit Morgan radius-2 fingerprints and
 | Solubility_AqSolDB (MAE) | 1.300 ± 0.035 | 0.741 ± 0.013 (MiniMol) |
 
 The MolScout values are the results of this repository's fixed baseline configuration. The leaderboard values are external reference numbers, not reproduced runs. In the TDC 1.1.15 AqSolDB test data, RDKit could not parse two rows; those rows are recorded and excluded, so the MolScout MAE uses 1,995 of 1,997 test rows. The other three endpoints scored every test row. See the [full per-seed results and run manifest](docs/benchmark/baseline_results.json) for package versions, row counts, parameters, and excluded SMILES. TDC's official pages list the benchmark metrics and current leaderboard results: [hERG](https://tdcommons.ai/benchmark/admet_group/20herg/), [AMES](https://tdcommons.ai/benchmark/admet_group/21ames/), [BBB_Martins](https://tdcommons.ai/benchmark/admet_group/07bbb/), and [Solubility_AqSolDB](https://tdcommons.ai/benchmark/admet_group/06aqsol/). Leaderboard values were checked on 2026-10-14 and can change. Five seeds are included as a small ensemble; the standard deviation displayed in the app is between-model spread, not calibrated prediction uncertainty. Classification outputs are scores for dataset class 1 and must be interpreted using each dataset's label definition.
+
+### Atom-level toxicity attribution
+
+For hERG and AMES, expand a molecule and click **Explain ... score with atom attribution**. MolScout averages XGBoost `pred_contribs` over the five saved seeds, then projects Morgan radius-2 feature contributions onto the atom environments that generated each fingerprint bit. Red atoms push the raw model margin toward dataset class 1; blue atoms push away. The image is an approximate projection because fingerprint hashes can collide and some nonzero contributions may not map to a present atom environment. Contributions are on the raw-margin (log-odds) scale, not probability points. They show associations learned from the dataset, not causal toxicity mechanisms or experimental findings. Each explanation is also added to the report's evidence list as `explain_prediction`.
+
+This is the generated hERG attribution output for caffeine from the five saved baseline models (not a screenshot or a toxicity finding):
+
+![Caffeine hERG XGBoost atom attribution](docs/images/caffeine_herg_attribution.png)
+
+Recreate it after installing the local app dependencies with `python scripts/render_attribution_example.py`.
 
 To rerun from a Python 3.12 environment, first install MolScout's core dependencies and then the small TDC runtime dependency set. The requirements file avoids pulling PyTDC's unrelated model-serving dependencies:
 
@@ -182,7 +197,8 @@ The runner writes each seed's test scores, prediction CSV, excluded-row list, an
 |---|---|
 | Python 3.12 | App runtime and reusable analysis code |
 | Streamlit | Free-host-friendly browser UI and no-cost demo replay |
-| RDKit | SMILES parsing, molecular descriptors, and Morgan fingerprints |
+| RDKit | SMILES parsing, descriptors, Morgan fingerprints, and drawing atom environments |
+| XGBoost tree contributions | Per-molecule feature attribution for hERG/AMES, projected onto RDKit Morgan atom environments |
 | NumPy + scikit-learn | Fingerprint arrays and XGBoost's sklearn model API |
 | Tanimoto similarity | Transparent structural-neighbor score for the bundled examples |
 | PyTDC + XGBoost | Five-seed ADMET baseline; saved XGBoost models power the live demo |
@@ -225,7 +241,7 @@ This gives a student or software engineer a quick, inspectable way to turn a mol
 ## Future improvements
 
 - Export Chemprop ensemble predictions and compare them on the same fixed splits.
-- Add validated model-based explanation and uncertainty results.
+- Compare atom attributions with a second explanation method and test their stability across held-out scaffolds.
 - Expand the reference catalog with a documented, licensed source.
 - Add MCP-backed tool orchestration only when each tool's output is validated and cited.
 - Add a manually reviewed evaluation set for agent answers and report both accuracy and failure cases.
@@ -233,6 +249,7 @@ This gives a student or software engineer a quick, inspectable way to turn a mol
 ## Author
 
 [Rohith Singhu](https://github.com/rohith-jpg) · [GitHub](https://github.com/rohith-jpg) · [LinkedIn](https://www.linkedin.com/in/rohith-singhu-24b8a0249)
+
 
 
 
