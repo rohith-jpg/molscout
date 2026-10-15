@@ -168,8 +168,14 @@ def evaluate_chemprop_predictions(
     prediction_columns = [
         column for column in frame.columns if str(column).startswith("pred_")
     ]
+    # Chemprop 2.3 writes the ensemble mean under the task's target column
+    # (here `Y`) and per-model predictions to a separate *_individual.csv file.
+    # The input test frame keeps the true labels separately, so `Y` in the
+    # prediction output is the model prediction in this CLI format.
+    if not prediction_columns and "Y" in frame.columns:
+        prediction_columns = ["Y"]
     if not prediction_columns:
-        raise ValueError(f"Chemprop output has no pred_* column: {list(frame.columns)}")
+        raise ValueError(f"Chemprop output has no prediction column: {list(frame.columns)}")
     y_true = test_frame["Y"].to_numpy(dtype=float)
     y_pred = frame[prediction_columns[0]].to_numpy(dtype=float)
     metric_name = TASKS[task_name]["metric"]
@@ -319,3 +325,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
