@@ -169,7 +169,9 @@ $env:PYTHONPATH = (Join-Path (Get-Location) 'src')
 python -m molscout.chemprop_runner --output-dir outputs/chemprop --tasks hERG --seeds 1 --ensemble-size 5
 ```
 
-The runner writes each seed's test scores, prediction CSV, excluded-row list, and training/prediction logs. Run all endpoints and seeds only after checking runtime and GPU memory; no Chemprop result is claimed in the README until the runner completes and its measured output is reviewed.
+The runner writes each seed's test scores, prediction CSV, excluded-row list, and training/prediction logs. The measured pilot below covers hERG, one seed, and a five-model ensemble; expand to more endpoints and seeds only after checking runtime and available memory.
+
+**Measured pilot:** Chemprop 2.3.1 completed a five-model hERG ensemble on CPU for seed 1 using TDC's official scaffold-held-out test rows. AUROC was **0.805** versus **0.755** for MolScout's Morgan + XGBoost baseline on the same seed and 132 test molecules (no invalid test rows excluded). This is one seed on a small test set, so it is a pilot comparison, not evidence that Chemprop is generally better. See [`docs/benchmark/chemprop_hERG_pilot.json`](docs/benchmark/chemprop_hERG_pilot.json) for exact values and versions. The run exposed a Chemprop 2.3 CLI output-column difference; the evaluator now accepts its target-named ensemble output.
 
 ## Tech stack
 
@@ -181,7 +183,7 @@ The runner writes each seed's test scores, prediction CSV, excluded-row list, an
 | NumPy + scikit-learn | Fingerprint arrays and XGBoost's sklearn model API |
 | Tanimoto similarity | Transparent structural-neighbor score for the bundled examples |
 | PyTDC + XGBoost | Five-seed ADMET baseline; saved XGBoost models power the live demo |
-| Chemprop + MAPIE | Chemprop GNN evaluation runner; MAPIE split-conformal intervals measured on AqSolDB |
+| Chemprop + MAPIE | Five-model Chemprop hERG pilot measured on one official split; MAPIE split-conformal intervals measured on AqSolDB |
 | MCP | Chemistry tool server available separately; the current UI calls the Python functions directly |
 
 ## Run locally
@@ -228,6 +230,7 @@ This gives a student or software engineer a quick, inspectable way to turn a mol
 ## Author
 
 [Rohith Singhu](https://github.com/rohith-jpg) · [GitHub](https://github.com/rohith-jpg) · [LinkedIn](https://www.linkedin.com/in/rohith-singhu-24b8a0249)
+
 
 
 
