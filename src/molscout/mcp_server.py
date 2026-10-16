@@ -11,6 +11,7 @@ from molscout.chemistry import validate_smiles as _validate_smiles
 from molscout.prediction import predict_admet as _predict_admet
 from molscout.prediction import explain_prediction as _explain_prediction
 from molscout.similarity import similar_known_drugs as _similar_known_drugs
+from molscout.pubchem import pubchem_lookup as _pubchem_lookup
 
 try:
     from mcp.server.fastmcp import FastMCP
@@ -70,6 +71,12 @@ def triage_with_agent(
         endpoints=endpoints,
         model_dir=Path(os.environ.get("MOLSCOUT_MODEL_DIR", "outputs/baseline")),
     )
+
+
+@mcp.tool()
+def pubchem_lookup(smiles: str) -> dict[str, object]:
+    """Look up PubChem compound identifiers and properties for a SMILES string."""
+    return _pubchem_lookup(smiles)
 
 
 if __name__ == "__main__":
