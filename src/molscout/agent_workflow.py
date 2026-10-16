@@ -133,6 +133,7 @@ def _plan(state: AgentState) -> dict[str, Any]:
             "compute_properties",
             "similar_known_drugs",
             *[f"predict_admet:{endpoint}" for endpoint in endpoints],
+            *(["pubchem_lookup"] if include_pubchem else []),
         ],
         "include_pubchem": include_pubchem,
         "parallel_strategy": "independent molecule workflows run in a bounded thread pool",
