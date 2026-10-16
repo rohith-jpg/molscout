@@ -80,10 +80,10 @@ flowchart LR
     CORE --> OUT[Ranked report with evidence IDs]
     OUT --> UI
     MCP[Separate MCP server + LangGraph tool workflow] -. tool calls .-> CORE
-    FUT[Future: LLM planner and external APIs] -. roadmap .-> CORE
+    FUT[Future: LLM planner] -. roadmap .-> CORE
 ```
 
-The current demo has no database or external API dependency. It loads the 20 bundled baseline models for the four measured endpoints. Chemprop, conformal, and MCP code in the repository is not called by this Streamlit demo. The MCP server now also exposes a LangGraph tool workflow: it creates a deterministic plan, runs independent molecule analyses in a bounded thread pool, ranks by the stated heuristic, and returns claims linked to tool evidence. It does not call an LLM; a learned planner and agent-answer evaluation remain future work.
+The current demo has no database or external API dependency. It loads the 20 bundled baseline models for the four measured endpoints. Chemprop, conformal, and MCP code in the repository is not called by this Streamlit demo. The MCP server exposes a LangGraph tool workflow and a PubChem PUG REST lookup. The workflow creates a deterministic plan, runs independent molecule analyses in a bounded thread pool, ranks by the stated heuristic, and returns claims linked to tool evidence. It does not call an LLM; a learned planner and agent-answer evaluation remain future work. PubChem lookup is an optional network call and records its source URL and retrieval time.
 
 ## Screenshots
 
@@ -202,7 +202,7 @@ $env:MOLSCOUT_MODEL_DIR = (Join-Path (Get-Location) 'models/baseline')
 python -m molscout.mcp_server
 ```
 
-The `triage_with_agent` MCP tool plans the requested endpoints, runs independent molecule workflows concurrently (up to four by default), ranks valid inputs by the documented rule-of-five heuristic, and returns evidence IDs for every result claim. This is a LangGraph orchestration workflow; it has no LLM planner, and the rank is not a drug-candidate score. The separate MCP server is not required by the public Streamlit demo.
+The `triage_with_agent` MCP tool plans the requested endpoints, runs independent molecule workflows concurrently (up to four by default), ranks valid inputs by the documented rule-of-five heuristic, and returns evidence IDs for every result claim. This is a LangGraph orchestration workflow; it has no LLM planner, and the rank is not a drug-candidate score. The separate MCP server is not required by the public Streamlit demo. It also offers `pubchem_lookup(smiles)`, which queries PubChem PUG REST for a matching compound ID and properties; this sends the SMILES to PubChem and can fail if the service or network is unavailable.
 
 ## Tech stack
 
@@ -216,7 +216,7 @@ The `triage_with_agent` MCP tool plans the requested endpoints, runs independent
 | Tanimoto similarity | Transparent structural-neighbor score for the bundled examples |
 | PyTDC + XGBoost | Five-seed ADMET baseline; saved XGBoost models power the live demo |
 | Chemprop + MAPIE | Five-model Chemprop hERG pilot measured on one official split; MAPIE split-conformal intervals measured on AqSolDB |
-| LangGraph + MCP | Optional stdio tool server; deterministic parallel tool workflow returns evidence-linked reports, while the UI calls Python functions directly |
+| LangGraph + MCP | Optional stdio tool server; deterministic parallel tool workflow returns evidence-linked reports, while the UI calls Python functions directly |\n| PubChem PUG REST | Optional external SMILES-to-CID/property lookup; response includes source URL and retrieval timestamp |
 
 ## Run locally
 
