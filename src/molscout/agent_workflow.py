@@ -14,6 +14,7 @@ from langgraph.graph import END, START, StateGraph
 
 from molscout.analysis import analyze_batch
 from molscout.prediction import ENDPOINTS, predict_admet
+from molscout.pubchem import pubchem_lookup
 
 
 class AgentState(TypedDict, total=False):
@@ -21,6 +22,7 @@ class AgentState(TypedDict, total=False):
     endpoints: list[str]
     model_dir: str
     parallelism: int
+    include_pubchem: bool
     plan: dict[str, Any]
     molecules: list[dict[str, Any]]
     ranking_method: str
@@ -30,6 +32,7 @@ def _analyze_one(
     item: tuple[int, str],
     endpoints: list[str],
     model_dir: Path,
+    include_pubchem: bool,
 ) -> dict[str, Any]:
     index, smiles = item
     report = analyze_batch([smiles])["molecules"][0]
@@ -87,6 +90,25 @@ def _analyze_one(
             }
         )
     report["admet_predictions"] = predictions
+    if include_pubchem:
+        evidence_id = f"m{index + 1}-pubchem"
+        try:
+            lookup = pubchem_lookup(report["canonical_smiles"])
+        except RuntimeError as exc:
+            lookup = {"found": False, "error": str(exc)}
+        report["evidence"].append(
+            {"id": evidence_id, "tool": "pubchem_lookup", "result": lookup}
+        )
+        if lookup.get("found"):
+            report["claims"].append(
+                {
+                    "text": (
+                        f"PubChem returned CID {lookup['cid']} for this structure; "
+                        "this database match does not establish drug approval or activity."
+                    ),
+                    "evidence_ids": [evidence_id],
+                }
+            )
     return report
 
 
@@ -100,6 +122,9 @@ def _plan(state: AgentState) -> dict[str, Any]:
         raise ValueError("Provide at least one SMILES string")
     if len(smiles) > 100:
         raise ValueError("A batch may contain at most 100 molecules")
+    include_pubchem = state.get("include_pubchem", False)
+    if include_pubchem and len(smiles) > 10:
+        raise ValueError("PubChem lookup is limited to 10 molecules per workflow run")
     return {
         "endpoints": endpoints,
         "molecules": len(smiles),
@@ -109,6 +134,7 @@ def _plan(state: AgentState) -> dict[str, Any]:
             "similar_known_drugs",
             *[f"predict_admet:{endpoint}" for endpoint in endpoints],
         ],
+        "include_pubchem": include_pubchem,
         "parallel_strategy": "independent molecule workflows run in a bounded thread pool",
         "planner": "deterministic; no LLM is called",
     }
@@ -121,7 +147,9 @@ def _execute(state: AgentState) -> dict[str, Any]:
     with ThreadPoolExecutor(max_workers=workers) as pool:
         reports = list(
             pool.map(
-                lambda item: _analyze_one(item, state["endpoints"], model_dir),
+                lambda item: _analyze_one(
+                    item, state["endpoints"], model_dir, state.get("include_pubchem", False)
+                ),
                 items,
             )
         )
@@ -169,6 +197,7 @@ def run_agent_workflow(
     endpoints: list[str] | None = None,
     model_dir: Path = Path("outputs/baseline"),
     parallelism: int = 4,
+    include_pubchem: bool = False,
 ) -> dict[str, Any]:
     """Run a planned, parallel chemistry-tool workflow and return cited results."""
     graph = StateGraph(AgentState)
@@ -185,6 +214,7 @@ def run_agent_workflow(
             "endpoints": endpoints or list(ENDPOINTS),
             "model_dir": str(model_dir),
             "parallelism": parallelism,
+            "include_pubchem": include_pubchem,
         }
     )
     return {
