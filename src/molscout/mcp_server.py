@@ -63,13 +63,16 @@ def explain_prediction(smiles: str, endpoint: str) -> dict[str, object]:
 
 @mcp.tool()
 def triage_with_agent(
-    smiles_list: list[str], endpoints: list[str] | None = None
+    smiles_list: list[str],
+    endpoints: list[str] | None = None,
+    include_pubchem: bool = False,
 ) -> dict[str, object]:
     """Run the LangGraph parallel workflow and return ranked, cited molecule reports."""
     return run_agent_workflow(
         smiles_list,
         endpoints=endpoints,
         model_dir=Path(os.environ.get("MOLSCOUT_MODEL_DIR", "outputs/baseline")),
+        include_pubchem=include_pubchem,
     )
 
 
