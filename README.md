@@ -216,7 +216,8 @@ The `triage_with_agent` MCP tool plans the requested endpoints, runs independent
 | Tanimoto similarity | Transparent structural-neighbor score for the bundled examples |
 | PyTDC + XGBoost | Five-seed ADMET baseline; saved XGBoost models power the live demo |
 | Chemprop + MAPIE | Five-model Chemprop hERG pilot measured on one official split; MAPIE split-conformal intervals measured on AqSolDB |
-| LangGraph + MCP | Optional stdio tool server; deterministic parallel tool workflow returns evidence-linked reports, while the UI calls Python functions directly |\n| PubChem PUG REST | Optional external SMILES-to-CID/property lookup; response includes source URL and retrieval timestamp |
+| LangGraph + MCP | Optional stdio tool server; deterministic parallel tool workflow returns evidence-linked reports, while the UI calls Python functions directly |
+| PubChem PUG REST | Optional external SMILES-to-CID/property lookup; response includes source URL and retrieval timestamp |
 
 ## Run locally
 
